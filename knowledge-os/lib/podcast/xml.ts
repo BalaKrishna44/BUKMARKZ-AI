@@ -1,5 +1,5 @@
 export interface EpisodeXml { id: string; title: string; description: string; publishedAt: Date; audioUrl: string; bytes: number; durationSec: number }
-export interface ShowXml { title: string; description: string; link: string; selfUrl: string; imageUrl?: string; author?: string; language?: string }
+export interface ShowXml { title: string; description: string; link: string; selfUrl: string; imageUrl?: string; author?: string; language?: string; category?: string; ownerEmail?: string; lastBuild?: Date }
 
 // XML 1.0 forbids most control characters; one stray \x0b in an article would make the whole feed unparseable.
 const BAD = /[\u0000-\u0008\u000b\u000c\u000e-\u001f￾￿]/g;
@@ -28,7 +28,7 @@ export function buildPodcastXml(show: ShowXml, eps: EpisodeXml[]): string {
     <itunes:author>${esc(show.author ?? 'Bukmarkz')}</itunes:author>
     <itunes:explicit>false</itunes:explicit>
     <itunes:type>episodic</itunes:type>
-    <itunes:block>Yes</itunes:block>
+${show.category ? `    <itunes:category text="${esc(show.category)}"/>\n` : ''}${show.ownerEmail ? `    <itunes:owner><itunes:name>${esc(show.author ?? 'Bukmarkz')}</itunes:name><itunes:email>${esc(show.ownerEmail)}</itunes:email></itunes:owner>\n` : ''}${show.lastBuild ? `    <lastBuildDate>${show.lastBuild.toUTCString()}</lastBuildDate>\n` : ''}    <itunes:block>Yes</itunes:block>
 ${show.imageUrl ? `    <itunes:image href="${esc(show.imageUrl)}"/>\n` : ''}${items}
   </channel>
 </rss>

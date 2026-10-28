@@ -1,6 +1,7 @@
 import { isPrivateIp, parsePublicUrl } from '../lib/netguard';
 import { chunkText, stripId3v2, concatMp3, mp3DurationSec } from '../lib/podcast/audio';
 import { buildPodcastXml, esc } from '../lib/podcast/xml';
+import { pickDigestItems, sortedIds, sinceIso, readableText, type DigestRow } from '../lib/podcast/digestPick';
 import { labelPropagation, numberClusters } from '../lib/graph/cluster';
 import { reconcile, DocSchema } from '../lib/vision/schema';
 import { sniffImage } from '../lib/vision/image';
@@ -93,5 +94,29 @@ const html = `<head><link rel="stylesheet" href="/a.css"><link rel="alternate" t
 ok(discoverFeedUrl(html, 'https://blog.example/post/1') === 'https://blog.example/feed.xml', 'discovers relative feed link');
 ok(discoverFeedUrl('<link rel="alternate" type="application/atom+xml" href="javascript:alert(1)">', 'https://x.test') === null, 'ignores non-http feed link');
 ok(discoverFeedUrl('<p>nothing</p>', 'https://x.test') === null, 'no feed link => null');
+
+// ---- daily briefing: which items go in ----
+const T = (m: number) => new Date(Date.UTC(2026, 9, 28, 12, 0) - m * 60000).toISOString();
+const body120 = 'x'.repeat(120);
+const row = (id: string, o: Partial<DigestRow> = {}): DigestRow => ({ id, title: id, url: `https://a.test/${id}`, summary: body120, note: null, content_text: null, created_at: T(10), ...o });
+const picked = pickDigestItems([
+  row('old', { created_at: T(300) }), row('new', { created_at: T(5) }),
+  row('short', { summary: 'too short', content_text: null }), row('priv', { ai_status: 'skipped_private' }),
+  row('dupA', { url: 'https://d.test/p#x', created_at: T(20) }), row('dupB', { url: 'https://d.test/p/', created_at: T(30) }),
+]);
+ok(picked.map((r) => r.id).join() === 'new,old,dupA' || picked.map((r) => r.id).join() === 'new,dupA,old', 'digest: newest first, drops short, private and repeat-URL items');
+ok(!picked.some((r) => ['short', 'priv', 'dupB'].includes(r.id)), 'digest: excluded items stay out');
+ok(pickDigestItems(Array.from({ length: 20 }, (_, i) => row('i' + i, { created_at: T(i) }))).length === 6, 'digest: capped at 6 items for a 2-minute episode');
+ok(pickDigestItems(Array.from({ length: 20 }, (_, i) => row('i' + i, { created_at: T(i) })), 3).length === 3, 'digest: cap is configurable');
+ok(pickDigestItems([]).length === 0, 'digest: nothing saved => empty');
+ok(readableText({ content_text: 'a', summary: null, note: 'b' }) === 'a\n\nb', 'readableText joins non-empty parts');
+ok(sortedIds([{ id: 'b' }, { id: 'a' }]).join() === 'a,b' && sortedIds([{ id: 'a' }, { id: 'b' }]).join() === sortedIds([{ id: 'b' }, { id: 'a' }]).join(), 'sortedIds is order independent (used for the already-made check)');
+ok(sinceIso(new Date('2026-10-28T12:00:00Z'), 24) === '2026-10-27T12:00:00.000Z', 'sinceIso = exactly 24 hours back');
+
+// ---- iTunes feed ----
+const xml2 = buildPodcastXml({ title: 'T', description: 'D', link: 'https://x.test', selfUrl: 'https://x.test/rss?token=a&b', imageUrl: 'https://x.test/cover.jpg', category: 'Technology', ownerEmail: 'me@x.test', lastBuild: new Date('2026-10-28T00:00:00Z') }, []);
+ok(xml2.includes('<itunes:category text="Technology"/>') && xml2.includes('<itunes:email>me@x.test</itunes:email>') && xml2.includes('<itunes:image href="https://x.test/cover.jpg"/>') && xml2.includes('<lastBuildDate>Wed, 28 Oct 2026 00:00:00 GMT</lastBuildDate>'), 'feed: category, owner, image, lastBuildDate');
+ok(xml2.includes('href="https://x.test/rss?token=a&amp;b"'), 'feed: self URL is XML-escaped');
+writeFileSync('/tmp/feed_sample.xml', buildPodcastXml({ title: 'My Briefing', description: 'D', link: 'https://x.test', selfUrl: 'https://x.test/f.xml', category: 'Technology', ownerEmail: 'me@x.test', imageUrl: 'https://x.test/c.jpg', lastBuild: new Date('2026-10-28T00:00:00Z') }, [{ id: 'e1', title: 'Daily Knowledge Briefing, 28 Oct', description: '3 items', publishedAt: new Date('2026-10-28T00:30:00Z'), audioUrl: 'https://x.test/api/podcast/tok/ep/e1.mp3', bytes: 480000, durationSec: 120 }]));
 
 console.log(`\n${pass} passed, ${fail} failed`); process.exit(fail ? 1 : 0);

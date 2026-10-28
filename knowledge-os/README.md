@@ -56,3 +56,10 @@ Drop `sql/`, `lib/`, `worker/`, `app/api/` into the existing app (they assume mi
 
 ## 6. Cost and abuse controls already in
 Daily episode cap, daily scan cap, 200-feed cap, 10 items per episode, 6,000 characters per source, 5 MB image cap, full-graph-rebuild throttle, SSRF guard, size/time bounds on every outbound fetch. Add real rate limiting (e.g. Upstash) in front of the LLM-backed routes before launch.
+
+## 2b. Daily Knowledge Briefing (last 24 hours, about 2 minutes)
+- `POST /api/podcast` (signed in): takes what you saved in the last 24 hours (newest 6 readable, non-private, de-duplicated by URL), queues one two-host episode, and starts it with `after()`. `GET /api/podcast` lists episodes + status. Replies: `queued` (202), `exists` (same items already made today), `nothing_new`, `daily_limit` (429).
+- `GET /api/cron/daily-briefing` (Bearer `CRON_SECRET`, daily 00:30 UTC = 06:00 IST in `vercel.json`): queues a briefing for every user who has a private feed. `/api/cron/podcast` (every 5 min) does the writing and speaking.
+- `GET /api/podcast/rss?token=...` is the same feed as `/api/podcast/{token}/feed.xml` (prefer the path form: query strings end up in more logs).
+- Env: `ANTHROPIC_MODEL` (script), `TTS_PROVIDER=openai|elevenlabs`, `OPENAI_TTS_MODEL` (e.g. `tts-1`), `TTS_VOICE_A/B`, `R2_*`, `APP_URL`, `CRON_SECRET`, optional `PODCAST_IMAGE_URL` (square JPG/PNG, 1400-3000 px), `PODCAST_CATEGORY`, `PODCAST_OWNER_EMAIL`, `PODCAST_EPISODES_PER_DAY` (default 5).
+- Needs `ai_status` on `oneclist_items` (importexport 001) to skip private saves. Not yet run against real Supabase, R2, Anthropic or OpenAI.
