@@ -35,6 +35,8 @@ ALLOWED_HOSTS = ['bukmarkz.com', 'www.bukmarkz.com', 'api.bukmarkz.com', 'localh
 # Staging etc.: extra hosts via env. Never put a bare IP here in production.
 ALLOWED_HOSTS += [h for h in os.environ.get('DJANGO_EXTRA_ALLOWED_HOSTS', '').split(' ') if h and not (PRODUCTION and re.fullmatch(r'[\d.:\[\]]+', h))]
 CSRF_TRUSTED_ORIGINS = ['https://bukmarkz.com', 'https://www.bukmarkz.com', 'https://api.bukmarkz.com']
+# Extra hosts (e.g. your-app.herokuapp.com) also need to be trusted for CSRF over https.
+CSRF_TRUSTED_ORIGINS += ['https://' + h for h in os.environ.get('DJANGO_EXTRA_ALLOWED_HOSTS', '').split(' ') if h and not re.fullmatch(r'[\d.:\[\]]+', h)]
 
 # Application definition
 
@@ -170,12 +172,18 @@ DATABASES = {
         "ENGINE": os.environ.get("SQL_ENGINE", "django.db.backends.sqlite3"),
         "NAME": os.environ.get("SQL_DATABASE", os.path.join(BASE_DIR, "db.sqlite3")),
         "USER": os.environ.get("SQL_USER", "user"),
-        "PASSWORD": _require('SQL_PASSWORD', min_len=16) if PRODUCTION else os.environ.get("SQL_PASSWORD", "password"),
+        "PASSWORD": _require('SQL_PASSWORD', min_len=16) if PRODUCTION and not os.environ.get('DATABASE_URL') else os.environ.get("SQL_PASSWORD", "password"),
         "HOST": os.environ.get("SQL_HOST", "localhost"),
         "PORT": os.environ.get("SQL_PORT", "5432"),
         "CONN_MAX_AGE": 60,
     }
 }
+
+# Heroku (and most PaaS hosts) provide the database as one DATABASE_URL. When it is set it replaces the SQL_* values above.
+# TLS is required: Heroku Postgres only accepts encrypted connections.
+if os.environ.get('DATABASE_URL'):
+    import dj_database_url
+    DATABASES['default'] = dj_database_url.parse(os.environ['DATABASE_URL'], conn_max_age=600, ssl_require=PRODUCTION)
 
 # Password validation
 # https://docs.djangoproject.com/en/3.0/ref/settings/#auth-password-validators

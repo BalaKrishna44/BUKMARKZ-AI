@@ -1,0 +1,15 @@
+{
+  "name": "bukmarkz-api",
+  "description": "Bukmarkz Django API",
+  "stack": "heroku-24",
+  "formation": { "web": { "quantity": 1, "size": "basic" } },
+  "addons": [{ "plan": "heroku-postgresql:essential-1" }],
+  "buildpacks": [{ "url": "heroku/python" }],
+  "env": {
+    "ENVIRONMENT": { "value": "PRODUCTION" },
+    "SECRET_KEY": { "description": "50+ random characters: python -c \"import secrets; print(secrets.token_urlsafe(64))\"", "required": true },
+    "STRIPE_SECRET_KEY": { "description": "Live Stripe secret key (sk_live_ or rk_live_)", "required": true },
+    "DJANGO_EXTRA_ALLOWED_HOSTS": { "description": "Your Heroku host, e.g. bukmarkz-api.herokuapp.com", "required": true },
+    "MAIN_URL": { "description": "Your public site, e.g. https://www.bukmarkz.com", "required": true }
+  }
+}
