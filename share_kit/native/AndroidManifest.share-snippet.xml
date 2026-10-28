@@ -1,0 +1,19 @@
+<!-- android/app/src/main/AndroidManifest.xml: keep your existing <application> attributes (android:name etc.) as they are. -->
+<activity
+    android:name=".MainActivity"
+    android:exported="true"
+    android:launchMode="singleTask"
+    android:theme="@style/LaunchTheme"
+    android:configChanges="orientation|keyboardHidden|keyboard|screenSize|smallestScreenSize|locale|layoutDirection|fontScale|screenLayout|density|uiMode"
+    android:hardwareAccelerated="true"
+    android:windowSoftInputMode="adjustResize">
+
+    <!-- your existing MAIN / LAUNCHER filter stays -->
+
+    <!-- NEW: appear in the share sheet for links and text (Chrome, Instagram, LinkedIn, X ... all send text/plain) -->
+    <intent-filter>
+        <action android:name="android.intent.action.SEND" />
+        <category android:name="android.intent.category.DEFAULT" />
+        <data android:mimeType="text/plain" />
+    </intent-filter>
+</activity>

@@ -1,0 +1,27 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="512" height="512" viewBox="0 0 512 512" role="img" aria-labelledby="t">
+  <title id="t">Bukmarkz logo</title>
+  <defs>
+    <linearGradient id="bk-tile" x1="64" y1="0" x2="448" y2="512" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#ffd27a"/><stop offset=".45" stop-color="#fca311"/><stop offset="1" stop-color="#e08600"/>
+    </linearGradient>
+    <linearGradient id="bk-navy" x1="150" y1="96" x2="326" y2="420" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#26407a"/><stop offset="1" stop-color="#14213d"/>
+    </linearGradient>
+    <linearGradient id="bk-spark" x1="222" y1="196" x2="430" y2="404" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#ffffff"/><stop offset="1" stop-color="#fff0cc"/>
+    </linearGradient>
+    <linearGradient id="bk-amber" x1="222" y1="196" x2="430" y2="404" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#ffd27a"/><stop offset="1" stop-color="#fca311"/>
+    </linearGradient>
+  </defs>
+  <mask id="bk-cut" maskUnits="userSpaceOnUse" x="0" y="0" width="512" height="512">
+    <rect width="512" height="512" fill="#fff"/>
+    <path d="M326 196C342.64 283.36 342.64 283.36 430 300C342.64 316.64 342.64 316.64 326 404C309.36 316.64 309.36 316.64 222 300C309.36 283.36 309.36 283.36 326 196Z" fill="#000" stroke="#000" stroke-width="44" stroke-linejoin="round"/>
+  </mask>
+  <rect width="512" height="512" rx="112" fill="url(#bk-tile)"/>
+  <g transform="translate(256 256) scale(1) translate(-256 -256)">
+    <path d="M150 124a28 28 0 0 1 28-28h120a28 28 0 0 1 28 28v296l-88-72-88 72Z" fill="url(#bk-navy)" mask="url(#bk-cut)"/>
+    <path d="M326 196C342.64 283.36 342.64 283.36 430 300C342.64 316.64 342.64 316.64 326 404C309.36 316.64 309.36 316.64 222 300C309.36 283.36 309.36 283.36 326 196Z" fill="url(#bk-spark)"/>
+    <path d="M158 142C163.2 162.8 163.2 162.8 184 168C163.2 173.2 163.2 173.2 158 194C152.8 173.2 152.8 173.2 132 168C152.8 162.8 152.8 162.8 158 142Z" fill="#fff3d6" opacity=".95"/>
+  </g>
+</svg>

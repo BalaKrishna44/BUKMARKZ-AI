@@ -1,0 +1,14 @@
+# Replace the Withdraw model in subscription/models.py with this one.
+class Withdraw(models.Model):
+    """A payout request. The wallet is paid out manually (PayPal / bank transfer) to the contact below.
+    We never collect card numbers, expiry dates or CVCs: they must not be stored (PCI DSS), and a payout does not need them."""
+    STATUS = (('pending', 'Pending'), ('paid', 'Paid'), ('rejected', 'Rejected'))
+    user = models.ForeignKey(get_user_model(), on_delete=models.CASCADE)
+    name = models.CharField(max_length=100)
+    payout_email = models.EmailField(max_length=254)
+    status = models.CharField(max_length=10, choices=STATUS, default='pending')
+    withdrawal_date = models.DateField(auto_now_add=True)
+    amount = models.DecimalField(max_digits=6, decimal_places=0, default=0)
+
+    def __str__(self):
+        return self.name

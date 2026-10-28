@@ -1,0 +1,24 @@
+{
+  "name": "bukmarkz-ai-engine",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Social post OCR, action checklists, hybrid-search RAG and review nudges for Bukmarkz",
+  "scripts": {
+    "test": "node --test \"test/**/*.test.ts\"",
+    "test:db": "node --test test/db.integration.test.ts",
+    "typecheck": "tsc --noEmit",
+    "worker": "node src/worker.ts"
+  },
+  "dependencies": {
+    "@anthropic-ai/sdk": "latest",
+    "pg": "^8.13.0",
+    "sharp": "^0.34.0"
+  },
+  "devDependencies": {
+    "@types/node": "^22.0.0",
+    "@types/pg": "^8.11.0",
+    "typescript": "^5.7.0"
+  },
+  "engines": { "node": ">=22.18" }
+}

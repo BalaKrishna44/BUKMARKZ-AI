@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Save to Bukmarkz</title>
+  <link rel="stylesheet" href="popup.css">
+</head>
+<body>
+  <header class="bar">
+    <strong class="brand">Bukmarkz</strong>
+    <button type="button" id="logout" class="link" hidden>Sign out</button>
+  </header>
+
+  <!-- signed out -->
+  <form id="login-view" class="view" hidden>
+    <p class="lead">Sign in to save pages.</p>
+    <label>Username
+      <input id="username" type="text" autocomplete="username" required>
+    </label>
+    <label>Password
+      <input id="password" type="password" autocomplete="current-password" required>
+    </label>
+    <button type="submit" id="login-btn" class="primary">Sign in</button>
+  </form>
+
+  <!-- signed in -->
+  <form id="save-view" class="view" hidden>
+    <div class="page">
+      <div id="page-title" class="page-title"></div>
+      <div id="page-url" class="page-url"></div>
+    </div>
+    <label>Note <span class="opt">optional</span>
+      <input id="note" type="text" maxlength="70" placeholder="Why are you saving this?">
+    </label>
+    <label>Category
+      <select id="category">
+        <option value="">Saved from extension</option>
+      </select>
+    </label>
+    <button type="submit" id="save-btn" class="primary">Save bookmark</button>
+  </form>
+
+  <p id="status" class="status" role="status" aria-live="polite"></p>
+
+  <script src="popup.js"></script>
+</body>
+</html>

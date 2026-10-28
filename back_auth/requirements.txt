@@ -1,0 +1,28 @@
+-i https://pypi.org/simple
+# Upgraded from Django 3.1 to 5.2 LTS (needs Python 3.10+; Dockerfiles use 3.12).
+# NOT yet installed or tested: the build environment could not reach PyPI.
+# Once it installs cleanly, run `pip freeze` and pin exact versions.
+Django>=5.2,<5.3
+djangorestframework>=3.16,<4
+django-rest-knox>=5.0,<6
+django-rest-passwordreset>=1.5,<2
+django-cors-headers>=4.4,<5
+django-countries>=7.6,<8
+dj-database-url>=2.2,<3
+psycopg2-binary>=2.9.9,<3
+whitenoise>=6.7,<7
+gunicorn>=22,<24
+Pillow>=10.4
+requests>=2.32,<3
+beautifulsoup4>=4.12,<5
+html5lib>=1.1
+sendgrid>=6.11,<7
+stripe>=2.50,<3
+cryptography>=43
+
+pgvector>=0.3
+openai>=1.30
+anthropic>=0.40   # only needed when CLASSIFIER_PROVIDER=anthropic
+
+# Passkeys (needs Python >= 3.9 and a current cryptography, both satisfied above)
+webauthn>=2.5,<3

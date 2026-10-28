@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="512" height="512" viewBox="0 0 512 512" role="img" aria-labelledby="t">
+  <title id="t">Bukmarkz logo</title>
+  <mask id="bk-cut" maskUnits="userSpaceOnUse" x="0" y="0" width="512" height="512">
+    <rect width="512" height="512" fill="#fff"/>
+    <path d="M326 196C342.64 283.36 342.64 283.36 430 300C342.64 316.64 342.64 316.64 326 404C309.36 316.64 309.36 316.64 222 300C309.36 283.36 309.36 283.36 326 196Z" fill="#000" stroke="#000" stroke-width="44" stroke-linejoin="round"/>
+  </mask>
+  
+  <g transform="translate(256 256) scale(1) translate(-256 -256)">
+    <path d="M150 124a28 28 0 0 1 28-28h120a28 28 0 0 1 28 28v296l-88-72-88 72Z" fill="#14213d" mask="url(#bk-cut)"/>
+    <path d="M326 196C342.64 283.36 342.64 283.36 430 300C342.64 316.64 342.64 316.64 326 404C309.36 316.64 309.36 316.64 222 300C309.36 283.36 309.36 283.36 326 196Z" fill="#14213d"/>
+    
+  </g>
+</svg>

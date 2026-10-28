@@ -1,0 +1,4 @@
+{ "crons": [
+  { "path": "/api/cron/feeds",   "schedule": "*/5 * * * *" },
+  { "path": "/api/cron/podcast", "schedule": "*/5 * * * *" }
+] }

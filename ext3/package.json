@@ -1,0 +1,28 @@
+{
+  "name": "bukmarkz-extension",
+  "version": "0.3.1",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build": "node scripts/build.mjs",
+    "typecheck": "tsc --noEmit",
+    "test": "node scripts/test.mjs",
+    "zip": "npm run build && cd dist && zip -r ../bukmarkz-extension.zip .",
+    "build:edge": "BROWSER=edge node scripts/build.mjs",
+    "build:firefox": "BROWSER=firefox node scripts/build.mjs",
+    "build:all": "npm run build && npm run build:edge && npm run build:firefox",
+    "zip:all": "npm run build:all && (cd dist && zip -qr ../bukmarkz-chrome.zip .) && (cd dist-edge && zip -qr ../bukmarkz-edge.zip .) && (cd dist-firefox && zip -qr ../bukmarkz-firefox.zip .)"
+  },
+  "dependencies": {
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1"
+  },
+  "devDependencies": {
+    "@types/chrome": "^0.0.268",
+    "@types/react": "^18.3.3",
+    "@types/react-dom": "^18.3.0",
+    "esbuild": "^0.21.5",
+    "tailwindcss": "^3.4.4",
+    "typescript": "^5.5.0"
+  }
+}

@@ -1,0 +1,15 @@
+{
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "lib": [
+      "ES2023",
+      "DOM"
+    ],
+    "types": []
+  },
+  "include": [
+    "src",
+    "test",
+    "/tmp/shims.d.ts"
+  ]
+}

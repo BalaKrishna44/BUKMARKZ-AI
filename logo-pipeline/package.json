@@ -1,0 +1,12 @@
+{
+  "name": "bukmarkz-brand-assets",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Generates the Bukmarkz logo SVG, extension icons, favicons and social preview images.",
+  "scripts": {
+    "build:assets": "node generate-assets.js",
+    "build:assets:ext": "node generate-assets.js --extension-dir ../extension/icons"
+  },
+  "engines": { "node": ">=18" },
+  "dependencies": { "sharp": "^0.33.5" }
+}

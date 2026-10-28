@@ -1,0 +1,65 @@
+{
+  "manifest_version": 3,
+  "name": "Bukmarkz AI",
+  "short_name": "Bukmarkz",
+  "version": "0.3.1",
+  "description": "Save any tab to Bukmarkz in one click and browse your saved bookmarks by AI category.",
+  "minimum_chrome_version": "114",
+  "icons": {
+    "16": "icons/icon-16.png",
+    "32": "icons/icon-32.png",
+    "48": "icons/icon-48.png",
+    "128": "icons/icon-128.png"
+  },
+  "incognito": "spanning",
+  "permissions": [
+    "storage",
+    "activeTab",
+    "scripting",
+    "contextMenus",
+    "alarms",
+    "notifications"
+  ],
+  "host_permissions": [
+    "https://www.bukmarkz.com/*",
+    "https://bukmarkz.com/*",
+    "https://YOUR_PROJECT.supabase.co/*"
+  ],
+  "background": {
+    "service_worker": "service-worker.js",
+    "type": "module"
+  },
+  "content_scripts": [
+    {
+      "matches": [
+        "https://www.bukmarkz.com/*",
+        "https://bukmarkz.com/*"
+      ],
+      "js": [
+        "bridge.js"
+      ],
+      "run_at": "document_start",
+      "all_frames": false
+    }
+  ],
+  "action": {
+    "default_title": "Bukmarkz (Cmd/Ctrl+Shift+S to save)",
+    "default_popup": "popup.html",
+    "default_icon": {
+      "16": "icons/icon-16.png",
+      "32": "icons/icon-32.png"
+    }
+  },
+  "commands": {
+    "save-current-tab": {
+      "suggested_key": {
+        "default": "Ctrl+Shift+S",
+        "mac": "Command+Shift+S"
+      },
+      "description": "Open the Bukmarkz save overlay on this tab"
+    }
+  },
+  "content_security_policy": {
+    "extension_pages": "script-src 'self'; object-src 'self'; base-uri 'none'; frame-ancestors 'none'"
+  }
+}

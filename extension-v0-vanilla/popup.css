@@ -1,0 +1,71 @@
+:root {
+  --navy: #14213d;
+  --orange: #fca311;
+  --gray: #e5e5e5;
+  --bg: #ffffff;
+  --ink: #14213d;
+  --muted: #6c757d;
+  --field: #f6f6f6;
+  --ok: #1c7a4b;
+  --bad: #b3261e;
+  color-scheme: light dark;
+}
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #14213d;
+    --ink: #f1f3f8;
+    --muted: #aab3c5;
+    --field: #1d2d52;
+    --gray: #2c3d66;
+    --ok: #6fd39b;
+    --bad: #ff8a80;
+  }
+}
+* { box-sizing: border-box; }
+/* class rules like .view { display: grid } would otherwise override the hidden attribute */
+[hidden] { display: none !important; }
+body {
+  width: 340px;
+  margin: 0;
+  padding: 14px;
+  background: var(--bg);
+  color: var(--ink);
+  font: 14px/1.4 system-ui, -apple-system, "Segoe UI", sans-serif;
+}
+.bar { display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px; }
+.brand { font-size: 17px; letter-spacing: -0.01em; }
+.link { background: none; border: 0; color: var(--muted); text-decoration: underline; cursor: pointer; padding: 0; font: inherit; }
+.view { display: grid; gap: 10px; }
+.lead { margin: 0; color: var(--muted); }
+label { display: grid; gap: 4px; font-weight: 600; font-size: 13px; }
+.opt { font-weight: 400; color: var(--muted); }
+input, select {
+  width: 100%;
+  padding: 8px 10px;
+  border: 1px solid var(--gray);
+  border-radius: 8px;
+  background: var(--field);
+  color: inherit;
+  font: inherit;
+  font-weight: 400;
+}
+:focus-visible { outline: 3px solid var(--orange); outline-offset: 2px; }
+.page { padding: 10px; border-radius: 8px; background: var(--field); border: 1px solid var(--gray); min-width: 0; }
+.page-title { font-weight: 600; overflow: hidden; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; }
+.page-url { font-size: 12px; color: var(--muted); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.primary {
+  padding: 10px;
+  border: 0;
+  border-radius: 8px;
+  background: var(--orange);
+  color: #14213d;
+  font: inherit;
+  font-weight: 700;
+  cursor: pointer;
+}
+.primary:hover:not(:disabled) { filter: brightness(1.05); }
+.primary:disabled { opacity: 0.6; cursor: default; }
+.status { min-height: 1.4em; margin: 10px 0 0; font-weight: 600; }
+.status.ok { color: var(--ok); }
+.status.bad { color: var(--bad); }
+.status.info { color: var(--muted); font-weight: 400; }
