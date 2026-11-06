@@ -44,7 +44,7 @@ await Promise.all([
 // popup CSS
 const cssOut = resolve(dist, 'popup.css');
 if (process.env.POPUP_CSS_PREBUILT) cpSync(process.env.POPUP_CSS_PREBUILT, cssOut);
-else execFileSync(resolve(root, 'node_modules/.bin/tailwindcss'), ['-c', resolve(root, 'tailwind.config.js'), '-i', resolve(root, 'src/popup/popup.css'), '-o', cssOut, '--minify'], { stdio: 'inherit', cwd: root });
+else execFileSync(process.execPath, [resolve(root, 'node_modules/tailwindcss/lib/cli.js'), '-c', resolve(root, 'tailwind.config.js'), '-i', resolve(root, 'src/popup/popup.css'), '-o', cssOut, '--minify'], { stdio: 'inherit', cwd: root });
 
 cpSync(resolve(root, 'src/popup/popup.html'), resolve(dist, 'popup.html'));
 if (existsSync(resolve(root, 'icons'))) cpSync(resolve(root, 'icons'), resolve(dist, 'icons'), { recursive: true });
