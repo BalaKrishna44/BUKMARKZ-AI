@@ -22,8 +22,7 @@ fi
 ufw allow 80/tcp; ufw allow 443/tcp
 ufw --force enable
 
-# Docker publishes ports around ufw. Coolify binds 6001/6002 for its own realtime, so close them to the world explicitly.
-for p in 6001 6002; do iptables -C DOCKER-USER -p tcp --dport $p ! -s "${ADMIN_IP:-127.0.0.1}" -j DROP 2>/dev/null || true; done
+# NOTE: Docker-published ports bypass ufw. After Coolify is up, scan the server from another machine (nmap -Pn <ip>) and confirm only 80/443 (and 22/8000 from your IP) answer.
 
 systemctl enable --now fail2ban
 dpkg-reconfigure -f noninteractive unattended-upgrades
