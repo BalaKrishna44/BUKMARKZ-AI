@@ -1,9 +1,10 @@
-# Coolify: New Resource -> Docker Compose (from this repo). Set the variables below in Coolify's Environment tab, NOT in this file.
+# Lives at the repo root so Coolify's defaults work (Base directory /, location /docker-compose.yaml); the app is built from ./app-shell.
+# Coolify: New Resource -> Public Git Repository -> Build pack Docker Compose. Set the variables below in Coolify's Environment tab, NOT in this file.
 # Two services: the web app, and a tiny scheduler that calls the app's /api/cron/* routes (replaces vercel.json, which only works on Vercel).
 services:
   app:
     build:
-      context: .
+      context: ./app-shell
       args:
         NEXT_PUBLIC_SITE_URL: ${NEXT_PUBLIC_SITE_URL}
         NEXT_PUBLIC_SUPABASE_URL: ${NEXT_PUBLIC_SUPABASE_URL}

@@ -26,7 +26,7 @@ git add package-lock.json                                          # the Dockerf
 - Turn on automatic security updates (`unattended-upgrades`).
 
 ## 3. Coolify
-1. Connect the Git repo. New Resource → **Docker Compose** → base directory `app-shell`, file `docker-compose.yml`.
+1. Connect the Git repo. New Resource → **Public Git Repository** → build pack **Docker Compose**, base directory `/`, compose location `/docker-compose.yaml` (the defaults; the file at the repo root builds `./app-shell`).
 2. Domain for the `app` service: `https://bukmarkz.com` (Coolify issues the Let's Encrypt certificate). Add `www` as a redirect.
 3. Environment tab: copy every variable from `.env.example`. Required to boot: `NEXT_PUBLIC_SITE_URL`, `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY`, `SUPABASE_URL`, `SUPABASE_ANON_KEY`, `SUPABASE_SERVICE_ROLE_KEY`, `CRON_SECRET` (16+ random chars), `RESEND_API_KEY`, `ANTHROPIC_API_KEY`, `OPENAI_API_KEY`. Mark the `NEXT_PUBLIC_*` ones as **Build Variables**.
 4. The service-role key and every API key stay server-side only. Never prefix them with `NEXT_PUBLIC_`.

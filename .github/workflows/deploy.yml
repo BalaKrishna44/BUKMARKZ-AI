@@ -1,5 +1,5 @@
 name: Deploy to Coolify
-# Runs only after CI succeeded on main. Coolify pulls the repo from GitHub and builds app-shell/docker-compose.yml itself;
+# Runs only after CI succeeded on main. Coolify pulls the repo from GitHub and builds docker-compose.yaml (repo root) itself;
 # this workflow just tells Coolify to start that deploy. Turn OFF "auto deploy on push" in Coolify so there is one trigger, not two.
 on:
   workflow_run:
