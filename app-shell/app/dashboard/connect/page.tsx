@@ -2,7 +2,7 @@ import type { Metadata } from 'next';
 import { Page } from '@/components/shell/ui';
 import TokenManager from './TokenManager';
 
-export const metadata: Metadata = { title: 'Connect Claude / Cursor · Bukmarkz' };
+export const metadata: Metadata = { title: 'Connect Claude / Cursor' };
 
 export default function Connect() {
   return (

@@ -1,7 +1,7 @@
 import type { Metadata } from 'next';
 import { Page, Panel } from '@/components/shell/ui';
 
-export const metadata: Metadata = { title: 'Browser extension · Bukmarkz' };
+export const metadata: Metadata = { title: 'Browser extension' };
 
 const Step = ({ n, children }: { n: number; children: React.ReactNode }) => (
   <li className="flex gap-3"><span className="grid size-6 shrink-0 place-items-center rounded-full bg-[#eaf3ed] text-xs font-bold text-[#1a7f4e]">{n}</span><span className="text-sm text-[#33443b]">{children}</span></li>

@@ -9,7 +9,7 @@ export const metadata: Metadata = {
 
 // FILL THESE IN BEFORE LAUNCH (same values as the Privacy Policy). Nothing here is invented for you.
 const OPERATOR = '[Operator name: person or company that runs Bukmarkz]';
-const ADDRESS = '[Postal address]';
+const ADDRESS = '2716 HSR, 31st Main Road, 16th Cross, Bangalore 560102, India';
 const LAST_UPDATED = '4 November 2026';
 const SUPPORT = 'support@bukmarkz.com';
 

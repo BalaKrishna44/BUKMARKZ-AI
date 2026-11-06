@@ -3,7 +3,7 @@ import Link from 'next/link';
 import { redirect } from 'next/navigation';
 import { createClient } from '@/lib/supabase/server';
 
-export const metadata: Metadata = { title: 'Overview · Bukmarkz' };
+export const metadata: Metadata = { title: 'Overview' };
 export const dynamic = 'force-dynamic';
 
 const Card = ({ title, children }: { title: string; children: React.ReactNode }) => (

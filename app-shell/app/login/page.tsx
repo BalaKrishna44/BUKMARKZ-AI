@@ -4,7 +4,7 @@ import { createClient } from '@/lib/supabase/server';
 import { safeNext } from '@/lib/safeNext';
 import LoginForm from './LoginForm';
 
-export const metadata: Metadata = { title: 'Sign in · Bukmarkz' };
+export const metadata: Metadata = { title: 'Sign in', robots: { index: false } };
 export const dynamic = 'force-dynamic';
 
 export default async function LoginPage({ searchParams }: { searchParams: Promise<{ next?: string; error?: string }> }) {

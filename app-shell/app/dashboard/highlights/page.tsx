@@ -4,7 +4,7 @@ import { createClient } from '@/lib/supabase/server';
 import HighlightLibrary from '@/components/cite/HighlightLibrary';
 
 export const dynamic = 'force-dynamic';
-export const metadata: Metadata = { title: 'Highlights · Bukmarkz', robots: { index: false, follow: false } };
+export const metadata: Metadata = { title: 'Highlights', robots: { index: false, follow: false } };
 
 export default async function HighlightsPage() {
   const { data: { user } } = await (await createClient()).auth.getUser();

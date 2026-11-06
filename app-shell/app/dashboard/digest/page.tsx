@@ -4,7 +4,7 @@ import { createClient } from '@/lib/supabase/server';
 import { Page } from '@/components/shell/ui';
 import PrefToggle from '@/components/shell/PrefToggle';
 
-export const metadata: Metadata = { title: 'Weekly digest · Bukmarkz' };
+export const metadata: Metadata = { title: 'Weekly digest' };
 export const dynamic = 'force-dynamic';
 
 export default async function DigestPage() {

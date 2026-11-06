@@ -4,7 +4,7 @@ import { createClient } from '@/lib/supabase/server';
 import { ITEM_COLUMNS, toBookmark, type Bookmark, type ItemRow } from '@/lib/bookmarks';
 import VaultStudioExporter, { type StudioSource } from '@/components/dashboard/VaultStudioExporter';
 
-export const metadata: Metadata = { title: 'Vault Studio · Bukmarkz' };
+export const metadata: Metadata = { title: 'Vault Studio' };
 export const dynamic = 'force-dynamic';
 
 export default async function StudioPage() {

@@ -30,7 +30,7 @@ export async function generateMetadata({ params }: { params: Promise<{ tool: str
   const t = TOOLS[(await params).tool];
   if (!t) return {};
   const title = `${t.h1} in 60 seconds`;
-  return { title: `${title} · Bukmarkz`, description: `${t.blurb} Your file is read in your browser; nothing is uploaded until you sign in.`, alternates: { canonical: `/switch/${(await params).tool}` }, openGraph: { title, type: 'website' } };
+  return { title: `${title}`, description: `${t.blurb} Your file is read in your browser; nothing is uploaded until you sign in.`, alternates: { canonical: `/switch/${(await params).tool}` }, openGraph: { title, type: 'website' } };
 }
 
 export default async function SwitchPage({ params }: { params: Promise<{ tool: string }> }) {

@@ -1,7 +1,7 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
 
-export const metadata: Metadata = { title: 'Coming soon · Bukmarkz' };
+export const metadata: Metadata = { title: 'Coming soon' };
 
 export default async function Soon({ searchParams }: { searchParams: Promise<{ f?: string }> }) {
   const f = ((await searchParams).f ?? 'This feature').slice(0, 60);
