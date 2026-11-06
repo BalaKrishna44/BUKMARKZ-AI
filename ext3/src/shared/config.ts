@@ -27,7 +27,7 @@ export const OCR_AVAILABLE = false;
 export const DASHBOARD_URL = `${WEB_ORIGINS[0]}/`;
 
 export const BRIDGE_CHANNEL = 'bukmarkz.bridge.v1';
-export const EXTENSION_VERSION = '0.3.0';
+export const EXTENSION_VERSION = '0.3.1';
 
 export const LIMITS = {
   recentSaves: 8,
