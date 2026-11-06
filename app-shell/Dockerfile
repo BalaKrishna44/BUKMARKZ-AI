@@ -17,7 +17,10 @@ ENV NEXT_PUBLIC_SITE_URL=$NEXT_PUBLIC_SITE_URL NEXT_PUBLIC_SUPABASE_URL=$NEXT_PU
     NEXT_PUBLIC_SUPABASE_ANON_KEY=$NEXT_PUBLIC_SUPABASE_ANON_KEY NEXT_PUBLIC_VAPID_PUBLIC_KEY=$NEXT_PUBLIC_VAPID_PUBLIC_KEY
 COPY --from=deps /app/node_modules ./node_modules
 COPY . .
-RUN npm run build
+# Next imports server modules while collecting page data, and the Supabase client throws on an empty URL. Placeholders are used ONLY for this build step
+# and are not stored in any image layer's ENV: real server secrets are runtime variables in Coolify.
+RUN SUPABASE_URL="${SUPABASE_URL:-https://build.placeholder.invalid}" SUPABASE_ANON_KEY="${SUPABASE_ANON_KEY:-build-placeholder}" \
+    SUPABASE_SERVICE_ROLE_KEY="${SUPABASE_SERVICE_ROLE_KEY:-build-placeholder}" npm run build
 
 FROM node:22-bookworm-slim AS run
 WORKDIR /app
