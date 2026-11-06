@@ -31,7 +31,7 @@ body{margin:0}
 
 export async function generateMetadata({ params }: { params: Promise<{ id: string }> }) {
   const s = validSlug((await params).id.toLowerCase()) ? await getPublicStack((await params).id.toLowerCase()) : null;
-  return { title: s ? `${s.title} · Bukmarkz` : 'Bukmarkz stack' };
+  return { title: s ? `${s.title}` : 'Bukmarkz stack' };
 }
 
 export default async function EmbedPage({ params, searchParams }: { params: Promise<{ id: string }>; searchParams: Promise<Search> }) {

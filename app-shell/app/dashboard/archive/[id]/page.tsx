@@ -30,7 +30,7 @@ export async function generateMetadata({ params }: { params: Promise<{ id: strin
   if (!UUID.test(id)) return { title: 'Archive' };
   const supabase = await createClient();
   const { data } = await supabase.from('oneclist_items').select('archive_title,title').eq('id', id).maybeSingle();     // RLS limits this to the owner
-  return { title: `${data?.archive_title || data?.title || 'Archive'} · Bukmarkz`, robots: { index: false, follow: false } };
+  return { title: `${data?.archive_title || data?.title || 'Archive'}`, robots: { index: false, follow: false } };
 }
 
 export default async function ArchivePage({ params }: { params: Promise<{ id: string }> }) {

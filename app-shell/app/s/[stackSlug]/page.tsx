@@ -18,7 +18,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { stackSlug } = await params;
   if (SESSION_ID_RE.test(stackSlug)) {                                 // /s/<uuid> is a Focus Session (tab flush), not a stack: unlisted, never indexed
     const fs = await getSharedSession(stackSlug);
-    return { title: fs ? `${fs.title} · Bukmarkz` : 'Session not found · Bukmarkz', robots: { index: false, follow: false }, referrer: 'no-referrer' };
+    return { title: fs ? `${fs.title}` : 'Session not found', robots: { index: false, follow: false }, referrer: 'no-referrer' };
   }
   const s = await getPublicStack(stackSlug);
   if (!s) return { title: 'Stack not found', robots: { index: false, follow: false } };
