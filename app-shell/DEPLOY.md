@@ -2,7 +2,7 @@
 
 Chosen layout: **Coolify runs the Next.js app and its scheduler; the database, auth and Edge Functions run on Supabase Cloud, region Frankfurt (eu-central-1).** Everything stays in the EU, which is what the Privacy Policy says. Self-hosting Supabase on the same VPS is possible later; this guide does not cover it.
 
-**Status:** nothing here has been run. No `next build`, no Docker build, no deploy has happened (the authoring sandbox has no npm network). Expect to fix a few dependency versions on the first build.
+**Status:** CI builds the app and the Docker image successfully (GitHub Actions). No real deploy has happened yet.
 
 ## 0. One-time local step
 ```bash
@@ -12,8 +12,8 @@ git add package-lock.json                                          # the Dockerf
 
 ## 1. Supabase (Frankfurt)
 1. New project, region **Central EU (Frankfurt)**. Save the DB password in a password manager.
-2. SQL editor: run the migrations **in a deliberate order**. Several migration numbers are duplicated across kits (001 ×3, 005, 006, 007, 010, 012, 019), so renumber first or run them kit by kit.
-3. Enable extensions: `vector`, `pg_cron`, `pg_net`. Then run `030_link_health.sql`, `030b_link_health_cron.sql`, `025b`/`029b` crons.
+2. Enable extensions first (Database → Extensions): `vector`, `pg_cron`, `pg_net`. Create the Vault secrets (step 4 below) before the cron migrations.
+   Then from the repo root: `supabase link --project-ref <ref>` and `supabase db push`. Order and exclusions: `supabase/MIGRATIONS.md`.
 4. Vault secrets (SQL): `select vault.create_secret('https://<ref>.supabase.co','project_url'); select vault.create_secret('<CRON_SECRET>','digest_cron_secret');`
 5. Auth → URL configuration: Site URL `https://bukmarkz.com`, add redirect URLs for `/auth/callback`. Turn on email confirmation.
 6. Edge Functions: `supabase functions deploy check-link-health send-friday-digest weekly-digest --no-verify-jwt` and `supabase secrets set CRON_SECRET=... RESEND_API_KEY=... ANTHROPIC_API_KEY=... SITE_URL=https://bukmarkz.com`.
@@ -40,10 +40,10 @@ git add package-lock.json                                          # the Dockerf
 ## 5. Go-live checklist
 - [ ] `https://bukmarkz.com/api/health` returns `ok`; sign-up, login, save, search, export work end to end
 - [ ] Cron logs show 200s; `check-link-health` runs every 10 minutes in Supabase
-- [ ] Privacy Policy and Terms placeholders filled in; **Delete account** built (both pages promise it)
+- [ ] Privacy Policy and Terms placeholders filled in; **Delete account** works (Settings → Account; test it with a throw-away user)
 - [ ] Privacy Policy matches reality: hosting is Contabo (Germany) + Supabase (Frankfurt) + the AI providers
 - [ ] Backups restore-tested once
 - [ ] Spend caps set at OpenAI and Anthropic; `assertBudget` limits configured
 
 ## Known gaps
-No Docker build or deploy has been run. `package-lock.json` does not exist yet. Payments, `/api/ask`, delete-account and the migration order are still open. A single VPS is a single point of failure: expect downtime during deploys and reboots.
+No Docker build or deploy has been run. `package-lock.json` does not exist yet. Payments and `/api/ask` are still open. A single VPS is a single point of failure: expect downtime during deploys and reboots.
