@@ -9,7 +9,9 @@
     "typecheck": "tsc --noEmit",
     "merge": "node ../scripts/merge-kits.mjs --write ."
   },
-  "engines": { "node": ">=20.11" },
+  "engines": {
+    "node": ">=20.11"
+  },
   "_note": "Version ranges were written WITHOUT npm access (no network in the authoring sandbox). Run `npm install`, then `npm run typecheck`, and fix any range that does not resolve or any API that moved.",
   "dependencies": {
     "@anthropic-ai/sdk": "^0.30.0",
@@ -40,6 +42,7 @@
     "zod": "^3.23.8"
   },
   "devDependencies": {
+    "@types/chrome": "^0.0.280",
     "@types/jsdom": "^21.1.7",
     "@types/node": "^22.9.0",
     "@types/pg": "^8.11.10",

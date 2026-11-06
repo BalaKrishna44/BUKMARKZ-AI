@@ -21,9 +21,8 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: 22
-          cache: npm
-          cache-dependency-path: app-shell/package-lock.json   # commit the lockfile after the first local `npm install`
-      - run: npm ci
+      # No package-lock.json exists yet. Once one is committed this becomes a reproducible `npm ci`; add `cache: npm` to setup-node then.
+      - run: if [ -f package-lock.json ]; then npm ci; else npm install; fi
       - run: npm run typecheck
       - run: npm run build
         env:   # build-time placeholders only. Real values live in Coolify, never in GitHub.
