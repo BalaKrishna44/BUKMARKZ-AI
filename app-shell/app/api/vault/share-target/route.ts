@@ -4,7 +4,7 @@ import { createClient } from '@/lib/supabase/server'; // your existing server he
 const SITE = (process.env.NEXT_PUBLIC_SITE_URL ?? 'https://bukmarkz.com').replace(/\/$/, '');
 const URL_RE = /https?:\/\/[^\s<>"']+/i;
 
-export function cleanUrl(raw?: string | null): string | null {
+function cleanUrl(raw?: string | null): string | null {
   const m = raw?.match(URL_RE)?.[0]; if (!m) return null;
   try {
     const u = new URL(m.replace(/[)\].,;:!?'"]+$/, ''));
