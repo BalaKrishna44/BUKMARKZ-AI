@@ -1,7 +1,8 @@
 import { z } from 'zod';
 import { admin, json, requireUser } from '@/lib/server';
 import { discoverFeedUrl, fetchFeed } from '@/lib/feeds/fetchFeed';
-import { parsePublicUrl, safeFetch } from '@/lib/ssrf';
+import { safeFetch } from '@/lib/ssrf';
+import { parsePublicUrl } from '@/lib/netguard';
 
 export const runtime = 'nodejs';
 const MAX_FEEDS = 200;
