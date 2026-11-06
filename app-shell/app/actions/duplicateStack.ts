@@ -4,7 +4,7 @@ import { redirect } from 'next/navigation';
 import { createClient } from '@/lib/supabase/server';
 import { getPublicStack } from '@/lib/stacks/public';
 import { validSlug } from '@/lib/stacks/slug';
-import { SIGNUP_PATH } from './remixStack';
+import { SIGNUP_PATH } from './remix-constants';
 
 /**
  * "Duplicate Stack to My Vault" on a public portfolio page (/<handle>/<slug>).

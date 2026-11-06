@@ -3,7 +3,7 @@ import Link from 'next/link';
 import { notFound, redirect } from 'next/navigation';
 import { cookies } from 'next/headers';
 import { createClient } from '@/lib/supabase/server';
-import { INTENT_COOKIE } from '@/app/actions/remixStack';
+import { INTENT_COOKIE } from '@/app/actions/remix-constants';
 import { AutoRemix, RemixButton } from '../RemixButton';
 import { getPublicStack } from '@/lib/stacks/public';
 

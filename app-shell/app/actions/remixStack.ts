@@ -1,6 +1,7 @@
 'use server';
 
 import { cookies } from 'next/headers';
+import { SIGNUP_PATH, INTENT_COOKIE } from './remix-constants';
 import { redirect } from 'next/navigation';
 import { createClient } from '@/lib/supabase/server';
 import { validSlug } from '@/lib/stacks/slug';
@@ -17,8 +18,6 @@ import { validSlug } from '@/lib/stacks/slug';
  *    reads through get_public_stack), and fork_stack only accepts is_public AND NOT is_blocked stacks.
  */
 
-export const SIGNUP_PATH = '/signup';            // change to '/register' if that is your sign-up route
-export const INTENT_COOKIE = 'bukmarkz_remix_intent';
 const INTENT_TTL_S = 30 * 60;
 
 export type RemixState = { ok: false; error: 'invalid' | 'not_found' | 'failed' } | null;
