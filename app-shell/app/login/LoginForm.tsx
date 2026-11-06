@@ -4,6 +4,7 @@ import { useState, type FormEvent } from 'react';
 import { createClient } from '@/lib/supabase/client';
 import { startExtensionSync } from '@/lib/syncLoginToExtension';
 import { useEffect } from 'react';
+import Link from 'next/link';
 
 type Mode = 'password' | 'link';
 export default function LoginForm({ next, linkFailed }: { next: string; linkFailed?: boolean }) {
@@ -47,6 +48,7 @@ export default function LoginForm({ next, linkFailed }: { next: string; linkFail
           <button type="button" onClick={() => { setMode(mode === 'password' ? 'link' : 'password'); setMsg(null); }} className="mt-3 w-full rounded-lg py-2 text-sm font-medium text-[#1a7f4e] outline-none hover:underline focus-visible:ring-2 focus-visible:ring-[#2fa66a]">
             {mode === 'password' ? 'Use an email link instead' : 'Use a password instead'}
           </button>
+        <p className="mt-4 text-center text-sm text-[#4b5c53]">New here? <Link href="/signup" className="font-semibold text-[#1a7f4e] hover:underline">Create an account</Link></p>
         </form>
       </div>
     </main>
