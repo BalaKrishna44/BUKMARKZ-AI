@@ -93,6 +93,7 @@ export default function PrivacyPage() {
             <h3 className="font-semibold text-white">b) Stored content (your vault)</h3>
             <UL>
               <li>The links you save, titles, notes, highlights, tags and collections, and the tags and categories the extension or AI adds.</li>
+              <li>An optional profile picture. We crop it to a square, shrink it to 256 pixels and remove its metadata (such as location), and we store only that resized copy.</li>
               <li>Text extracted from saved pages (and, where you use the feature, an archived copy or snapshot of the page).</li>
               <li>Voice notes you record (we keep the transcript and summary; the audio is sent for transcription, see section 3) and text from images you scan.</li>
               <li><B>Vector embeddings</B>: lists of numbers generated from your content so we can search by meaning. They are derived from your content and are treated as your data.</li>

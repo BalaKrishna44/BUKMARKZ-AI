@@ -4,7 +4,7 @@ import fs from 'node:fs'; import path from 'node:path'; import crypto from 'node
 const root = path.resolve(path.dirname(new URL(import.meta.url).pathname), '..');
 const SKIP_KITS = new Set(['extension','ext3','extension-v0-vanilla','extension-v1-knox','photo-backup','back_auth','demo','docs','scripts','qa-suite','migration','supabase','emails','share_kit','mcp-search','logo-pipeline']);
 // priority: later wins a collision (the winner is reported, the loser is listed)
-const ORDER = ['frontend-kit','pwa-kit','knowledge-os','ai-engine','importexport','enrichment','fx','deepcite','flashcards','snippets','resurface','price-alerts','pricing','media','workspace-ui','auth-suite','growth-kit','team-vaults','plan-gating','i18n-kit','homepage','dash','mobile-pwa','voice-vault','legal-kit'];
+const ORDER = ['frontend-kit','pwa-kit','knowledge-os','ai-engine','importexport','enrichment','fx','deepcite','flashcards','snippets','resurface','price-alerts','pricing','media','workspace-ui','auth-suite','growth-kit','team-vaults','plan-gating','i18n-kit','homepage','dash','mobile-pwa','voice-vault','legal-kit','profile-kit'];
 const SKIP_DIR = /(^|\/)(node_modules|\.next|dist|test|tests|__tests__|sql|scripts)(\/|$)/;
 const CODE = /\.(tsx?|css|json|mjs)$/;
 const files = new Map(); // dest -> [{kit, src, hash}]
