@@ -28,7 +28,7 @@ const load = async ({ username, slug }: Params) => {
 
 export async function generateMetadata({ params }: { params: Promise<Params> }): Promise<Metadata> {
   const r = await load(await params);
-  if (!r) return { title: 'Stack not found · Bukmarkz', robots: { index: false } };
+  if (!r) return { title: 'Stack not found', robots: { index: false } };
   const { stack: s } = r, url = `${SITE}/${s.handle}/${s.slug}`;
   const description = s.description || `${s.items.length} hand-picked links curated by @${s.handle}. Duplicate them into your own Bukmarkz vault.`;
   return {

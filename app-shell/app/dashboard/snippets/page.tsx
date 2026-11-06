@@ -4,7 +4,7 @@ import { createClient } from '@/lib/supabase/server';
 import SnippetVault from '@/components/snippets/SnippetVault';
 
 export const dynamic = 'force-dynamic';
-export const metadata: Metadata = { title: 'Snippet Vault · Bukmarkz', robots: { index: false, follow: false } };
+export const metadata: Metadata = { title: 'Snippet Vault', robots: { index: false, follow: false } };
 
 export default async function SnippetsPage() {
   const { data: { user } } = await (await createClient()).auth.getUser();

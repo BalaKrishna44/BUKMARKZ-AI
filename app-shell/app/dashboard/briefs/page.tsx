@@ -2,7 +2,7 @@ import type { Metadata } from 'next';
 import Link from 'next/link';
 import { Page, Panel } from '@/components/shell/ui';
 
-export const metadata: Metadata = { title: 'Topic briefs · Bukmarkz' };
+export const metadata: Metadata = { title: 'Topic briefs' };
 
 const PROMPTS = [
   'Using my Bukmarkz vault, write a brief on React 19 caching with the sources I saved.',

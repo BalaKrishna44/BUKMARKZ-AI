@@ -4,7 +4,7 @@ import { createClient } from '@/lib/supabase/server';
 import ReviewDeck from '@/components/flashcards/ReviewDeck';
 import MakeCards, { type Candidate } from '@/components/flashcards/MakeCards';
 
-export const metadata: Metadata = { title: 'Review · Bukmarkz', robots: { index: false, follow: false } };
+export const metadata: Metadata = { title: 'Review', robots: { index: false, follow: false } };
 export const dynamic = 'force-dynamic';
 
 export default async function ReviewPage() {

@@ -4,7 +4,7 @@ import { createClient } from '@/lib/supabase/server';
 import { Page } from '@/components/shell/ui';
 import TeamManager, { type OrgRow } from './TeamManager';
 
-export const metadata: Metadata = { title: 'Team invites · Bukmarkz' };
+export const metadata: Metadata = { title: 'Team invites' };
 export const dynamic = 'force-dynamic';
 
 export default async function TeamsPage() {

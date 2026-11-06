@@ -4,7 +4,7 @@ import { createClient } from '@/lib/supabase/server';
 import { ITEM_COLUMNS, toBookmark, type Bookmark, type Category, type ItemRow } from '@/lib/bookmarks';
 import BookmarkFeedView from './BookmarkFeedView';
 
-export const metadata: Metadata = { title: 'Dashboard · Bukmarkz' };
+export const metadata: Metadata = { title: 'Dashboard' };
 export const dynamic = 'force-dynamic';          // per-user data: never cache across users
 const LIMIT = 1000;                              // newest 1000 are searched client-side; see README for server-side paging
 

@@ -4,7 +4,7 @@ import { createClient } from '@/lib/supabase/server';
 import { Page, Panel } from '@/components/shell/ui';
 import SessionList, { type SessionRow } from './SessionList';
 
-export const metadata: Metadata = { title: 'Flush session · Bukmarkz' };
+export const metadata: Metadata = { title: 'Flush session' };
 export const dynamic = 'force-dynamic';
 
 export default async function SessionsPage() {

@@ -3,7 +3,7 @@ import { redirect } from 'next/navigation';
 import { createClient } from '@/lib/supabase/server';
 import { Page, Panel } from '@/components/shell/ui';
 
-export const metadata: Metadata = { title: 'Link health · Bukmarkz' };
+export const metadata: Metadata = { title: 'Link health' };
 export const dynamic = 'force-dynamic';
 
 interface Dead { id: string; title: string | null; url: string; dead_since: string | null; link_error: string | null; link_http_status: number | null; archive_url: string | null }

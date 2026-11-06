@@ -27,7 +27,7 @@ const safeHref = (u: string) => (/^https?:\/\//i.test(u) ? u : '#');
 
 export async function generateMetadata({ params }: { params: Promise<{ id: string }> }): Promise<Metadata> {
   const { id } = await params;
-  if (!UUID.test(id)) return { title: 'Archive · Bukmarkz' };
+  if (!UUID.test(id)) return { title: 'Archive' };
   const supabase = await createClient();
   const { data } = await supabase.from('oneclist_items').select('archive_title,title').eq('id', id).maybeSingle();     // RLS limits this to the owner
   return { title: `${data?.archive_title || data?.title || 'Archive'} · Bukmarkz`, robots: { index: false, follow: false } };

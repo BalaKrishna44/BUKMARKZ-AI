@@ -3,7 +3,7 @@ import { redirect } from 'next/navigation';
 import { createClient } from '@/lib/supabase/server';
 import SignupForm from './SignupForm';
 
-export const metadata: Metadata = { title: 'Create account · Bukmarkz' };
+export const metadata: Metadata = { title: 'Create account', robots: { index: false } };
 export const dynamic = 'force-dynamic';
 
 export default async function SignupPage() {

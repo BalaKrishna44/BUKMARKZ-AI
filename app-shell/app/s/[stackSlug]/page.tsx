@@ -21,7 +21,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     return { title: fs ? `${fs.title} · Bukmarkz` : 'Session not found · Bukmarkz', robots: { index: false, follow: false }, referrer: 'no-referrer' };
   }
   const s = await getPublicStack(stackSlug);
-  if (!s) return { title: 'Stack not found · Bukmarkz', robots: { index: false, follow: false } };
+  if (!s) return { title: 'Stack not found', robots: { index: false, follow: false } };
   const n = s.items.length;
   const description = s.description || `${n} hand-picked link${n === 1 ? '' : 's'} curated by @${s.handle}. Fork this stack into your own Bukmarkz in one click.`;
   const title = s.remixed_from ? `${s.title} — remixed by @${s.handle}` : `${s.title} — curated by @${s.handle}`;

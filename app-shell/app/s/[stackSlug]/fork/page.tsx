@@ -8,7 +8,7 @@ import { AutoRemix, RemixButton } from '../RemixButton';
 import { getPublicStack } from '@/lib/stacks/public';
 
 export const dynamic = 'force-dynamic';                        // reads the session
-export const metadata: Metadata = { title: 'Fork stack · Bukmarkz', robots: { index: false, follow: false } };
+export const metadata: Metadata = { title: 'Fork stack', robots: { index: false, follow: false } };
 
 /**
  * GET is read-only (safe to link to); the copy itself happens in a server action behind a button, so a third-party page
