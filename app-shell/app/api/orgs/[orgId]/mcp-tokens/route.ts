@@ -13,7 +13,7 @@ const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 const SITE = (process.env.NEXT_PUBLIC_SITE_URL ?? 'https://bukmarkz.com').replace(/\/$/, '');
 const sameOrigin = (req: Request) => { const o = req.headers.get('origin'); return !o || o === SITE || o === new URL(req.url).origin; };
 
-type Ctx = { params: Promise<{ orgId: string }> | { orgId: string } };
+type Ctx = { params: Promise<{ orgId: string }> };
 async function actor(req: Request, ctx: Ctx) {
   const user = await requireUser(req);
   const { orgId } = await ctx.params;
