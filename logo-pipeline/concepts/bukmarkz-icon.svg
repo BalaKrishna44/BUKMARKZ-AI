@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-label="Bukmarkz"><title>Bukmarkz</title>
+<rect width="512" height="512" rx="112" fill="#0e2a1c"/>
+<path d="M146 78h220a26 26 0 0 1 26 26v336l-136-82-136 82V104a26 26 0 0 1 26-26z" fill="#fca311"/>
+<path d="M146 78h220a26 26 0 0 1 26 26v40H120v-40a26 26 0 0 1 26-26z" fill="#ffb938" opacity=".55"/>
+<g transform="translate(0 6)"><circle cx="206" cy="236" r="52" fill="#fff" stroke="#1a7f4e" stroke-width="8.3"/><circle cx="220.6" cy="238.6" r="27.0" fill="#10261c"/><circle cx="229.4" cy="227.7" r="8.8" fill="#fff"/><circle cx="306" cy="236" r="52" fill="#fff" stroke="#1a7f4e" stroke-width="8.3"/><circle cx="320.6" cy="238.6" r="27.0" fill="#10261c"/><circle cx="329.4" cy="227.7" r="8.8" fill="#fff"/></g>
+<path d="M226 330q30 26 60 0" fill="none" stroke="#10261c" stroke-width="14" stroke-linecap="round"/></svg>

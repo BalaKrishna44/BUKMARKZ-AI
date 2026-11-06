@@ -34,6 +34,8 @@ export function Popup() {
   const [reminderId, setReminderId] = useState('none');
   const [busy, setBusy] = useState(false);
   const [notice, setNotice] = useState<Notice>(null);
+  const [flushStep, setFlushStep] = useState<'idle' | 'confirm' | 'busy'>('idle');
+  const [flushCount, setFlushCount] = useState(0);
   const noteRef = useRef<HTMLTextAreaElement>(null);
   const presets = useMemo(() => reminderPresets(), []);
 
@@ -85,6 +87,25 @@ export function Popup() {
     } finally {
       setBusy(false);
     }
+  }
+
+  // Flush Session: two clicks on purpose, because it closes tabs. The tab count needs the optional "tabs" permission, asked for here, inside the click.
+  async function flushAsk() {
+    if (!(await chrome.permissions.request({ permissions: ['tabs'] }))) { setNotice({ kind: 'err', text: 'Bukmarkz needs the tabs permission to read titles. Nothing was changed.' }); return; }
+    const tabs = await chrome.tabs.query({ currentWindow: true });
+    const n = tabs.filter((t) => isSavableUrl(t.url) && !/^https:\/\/(www\.)?bukmarkz\.com\//.test(t.url ?? '')).length;
+    if (n === 0) { setNotice({ kind: 'err', text: 'No savable tabs in this window.' }); return; }
+    setFlushCount(n); setFlushStep('confirm');
+  }
+  async function flushGo() {
+    setFlushStep('busy'); setNotice(null);
+    try {
+      const win = await chrome.windows.getCurrent();
+      const res = await send({ type: 'flush:session', windowId: win.id });
+      if (res.ok && res.flush) setNotice({ kind: 'ok', text: `Saved ${res.flush.saved} tabs as one session and closed ${res.flush.closed}.${res.flush.kept ? ` ${res.flush.kept} kept open.` : ''}` });
+      else setNotice({ kind: 'err', text: res.ok ? 'Unexpected reply.' : res.error, signIn: !res.ok && res.code === 'not_signed_in' });
+    } catch { setNotice({ kind: 'err', text: 'Something went wrong. Your tabs were not closed.' }); }
+    setFlushStep('idle');
   }
 
   const openDashboard = () => void chrome.tabs.create({ url: DASHBOARD_URL });
@@ -166,6 +187,26 @@ export function Popup() {
               {notice.signIn && <button type="button" onClick={openDashboard} className="font-semibold underline">Open Bukmarkz</button>}
             </p>
           )}
+        </section>
+      )}
+
+      {!incognito && user && (
+        <section aria-label="Flush session" className="mt-5 rounded-lg border border-slate-800 bg-slate-900/60 p-3">
+          <h2 className="text-[11px] font-medium uppercase tracking-wide text-slate-400">Too many tabs?</h2>
+          {flushStep === 'confirm' ? (
+            <div className="mt-2">
+              <p className="text-xs text-slate-300">Save {flushCount} tab{flushCount === 1 ? '' : 's'} as one session and close them? Pinned tabs and Bukmarkz stay open. Anyone with the session link can view it.</p>
+              <div className="mt-2 flex gap-2">
+                <button type="button" onClick={() => void flushGo()} className="flex-1 rounded-lg bg-[#fca311] px-3 py-2 text-sm font-bold text-[#14213d] hover:bg-[#ffb23e]">Save and close</button>
+                <button type="button" onClick={() => setFlushStep('idle')} className="rounded-lg border border-slate-700 px-3 py-2 text-sm text-slate-200 hover:bg-slate-800">Cancel</button>
+              </div>
+            </div>
+          ) : (
+            <button type="button" disabled={flushStep === 'busy'} onClick={() => void flushAsk()} className="mt-2 w-full rounded-lg border border-[#fca311] px-3 py-2 text-sm font-semibold text-[#fca311] hover:bg-[#fca311]/10 disabled:opacity-60">
+              {flushStep === 'busy' ? 'Saving…' : 'Flush session'}
+            </button>
+          )}
+          {!tab && notice && <p role={notice.kind === 'err' ? 'alert' : 'status'} className="mt-2 text-xs text-slate-200">{notice.text}</p>}
         </section>
       )}
 

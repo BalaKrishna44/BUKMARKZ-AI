@@ -3,7 +3,7 @@
 import { useCallback, useDeferredValue, useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
 import { createClient } from '@/lib/supabase/client';
 import { startExtensionSync } from '@/lib/syncLoginToExtension';
-import { ALL, ITEM_COLUMNS, MAX_TAGS, TASKS, UNSORTED, applyChange, domainOf, parseTagInput, rowFromPayload, searchMatches, splitTags, timeAgo, toBookmark, type Bookmark, type Category, type ItemRow } from '@/lib/bookmarks';
+import { ALL, ITEM_COLUMNS, MAX_TAGS, TASKS, UNSORTED, applyChange, parseTagInput, sourceLabel, rowFromPayload, searchMatches, splitTags, timeAgo, toBookmark, type Bookmark, type Category, type ItemRow } from '@/lib/bookmarks';
 
 type ViewMode = 'list' | 'grid';
 interface Props { initialBookmarks: Bookmark[]; initialCategories: Category[]; userId: string; userEmail: string; truncated?: boolean }
@@ -15,9 +15,14 @@ type Toast = { id: number; text: string; tone: 'ok' | 'err' } | null;
 const PAGE = 60;                                  // rows rendered at once; more load as you scroll (keeps 1000 rows fast)
 
 /* ───────────────────────────── small pieces ───────────────────────────── */
+/** Web pages are links; voice notes and scans have no web address, so they are plain text (never an href). */
+function TitleLink({ b, className }: { b: Bookmark; className?: string }) {
+  return b.kind === 'link' ? <a href={b.url} target="_blank" rel="noopener noreferrer" className={className}>{b.title}</a> : <span className={className}>{b.title}</span>;
+}
+
 function Favicon({ b }: { b: Bookmark }) {
   const [bad, setBad] = useState(false);
-  const host = domainOf(b.url);
+  const host = sourceLabel(b);
   if (!b.faviconUrl || bad) return <span aria-hidden="true" className="grid size-8 shrink-0 place-items-center rounded-lg bg-[#2fa66a]/15 text-xs font-bold uppercase text-[#1a7f4e]">{host[0] ?? '?'}</span>;
   // eslint-disable-next-line @next/next/no-img-element -- tiny third-party icons; next/image would need every host allow-listed
   return <img src={b.faviconUrl} alt="" width={32} height={32} loading="lazy" decoding="async" referrerPolicy="no-referrer" onError={() => setBad(true)} className="size-8 shrink-0 rounded-lg bg-[#eaf3ed] object-contain p-1" />;
@@ -117,11 +122,11 @@ function ListRow({ b, categoryName, categories, actions, onTag }: ItemProps) {
       <Favicon b={b} />
       <div className="min-w-0 flex-1">
         <div className="flex min-w-0 items-baseline gap-2">
-          <a href={b.url} target="_blank" rel="noopener noreferrer" className={`truncate text-sm font-medium outline-none hover:text-[#1a7f4e] focus-visible:underline ${b.completedAt ? 'text-[#66766d] line-through' : 'text-[#10261c]'}`}>{b.title}</a>
-          <span className="hidden shrink-0 truncate text-xs text-[#66766d] sm:inline sm:max-w-[10rem]">{domainOf(b.url)}</span>
+          <TitleLink b={b} className={`truncate text-sm font-medium outline-none hover:text-[#1a7f4e] focus-visible:underline ${b.completedAt ? 'text-[#66766d] line-through' : 'text-[#10261c]'}`} />
+          <span className="hidden shrink-0 truncate text-xs text-[#66766d] sm:inline sm:max-w-[10rem]">{sourceLabel(b)}</span>
         </div>
         {b.summary && <p className="mt-0.5 truncate text-xs text-[#4b5c53]">{b.summary}</p>}
-        <div className="mt-1 flex flex-wrap items-center gap-x-3 gap-y-1 sm:hidden"><span className="text-[11px] text-[#66766d]">{domainOf(b.url)}</span><time dateTime={b.createdAt} className="text-[11px] text-[#66766d]">{timeAgo(b.createdAt)}</time></div>
+        <div className="mt-1 flex flex-wrap items-center gap-x-3 gap-y-1 sm:hidden"><span className="text-[11px] text-[#66766d]">{sourceLabel(b)}</span><time dateTime={b.createdAt} className="text-[11px] text-[#66766d]">{timeAgo(b.createdAt)}</time></div>
       </div>
       <div className="hidden w-48 shrink-0 lg:block"><Tags tags={b.tags} onPick={onTag} max={2} /></div>
       <div className="hidden w-32 shrink-0 justify-end xl:flex">{categoryName && <span className="truncate rounded-full bg-[#2fa66a]/15 px-2.5 py-0.5 text-[11px] font-medium text-[#1a7f4e]">{categoryName}</span>}</div>
@@ -138,12 +143,12 @@ function GridCard({ b, categoryName, categories, actions, onTag }: ItemProps) {
       <div className="flex items-start gap-3">
         {b.isTask && <TaskCheck b={b} toggle={actions.toggle} />}
         <Favicon b={b} />
-        <div className="min-w-0 flex-1"><p className="truncate text-xs text-[#4b5c53]">{domainOf(b.url)}</p>{categoryName && <p className="truncate text-[11px] text-[#1a7f4e]">{categoryName}</p>}</div>
+        <div className="min-w-0 flex-1"><p className="truncate text-xs text-[#4b5c53]">{sourceLabel(b)}</p>{categoryName && <p className="truncate text-[11px] text-[#1a7f4e]">{categoryName}</p>}</div>
         <ActionsMenu b={b} categories={categories} actions={actions} onOpenChange={setRaised} />
       </div>
-      <h3 className="line-clamp-2 text-[15px] font-semibold leading-snug text-[#10261c]"><a href={b.url} target="_blank" rel="noopener noreferrer" className={`outline-none hover:text-[#1a7f4e] focus-visible:underline ${b.completedAt ? 'text-[#66766d] line-through' : ''}`}>{b.title}</a></h3>
+      <h3 className="line-clamp-2 text-[15px] font-semibold leading-snug text-[#10261c]"><TitleLink b={b} className={`outline-none hover:text-[#1a7f4e] focus-visible:underline ${b.completedAt ? 'text-[#66766d] line-through' : ''}`} /></h3>
       <p className="line-clamp-3 min-h-[3.75rem] text-[13px] leading-5 text-[#4b5c53]">{b.summary ?? <span className="italic text-[#66766d]">Summary pending…</span>}</p>
-      <p className="truncate text-[11px] text-[#66766d]" title={b.url}>{b.url}</p>
+      <p className="truncate text-[11px] text-[#66766d]" title={b.kind === 'link' ? b.url : undefined}>{b.kind === 'link' ? b.url : sourceLabel(b)}</p>
       <div className="mt-auto flex items-end justify-between gap-2"><Tags tags={b.tags} onPick={onTag} max={3} /><time dateTime={b.createdAt} title={new Date(b.createdAt).toLocaleString()} className="shrink-0 text-[11px] text-[#66766d]">{timeAgo(b.createdAt)}</time></div>
     </li>
   );
@@ -251,7 +256,7 @@ export default function BookmarkFeedView({ initialBookmarks, initialCategories, 
 
   /* actions: optimistic, rolled back if Supabase says no */
   const actions: Actions = {
-    copy: (b) => { void (async () => { try { await navigator.clipboard.writeText(b.url); say('Link copied'); } catch { const t = document.createElement('textarea'); t.value = b.url; document.body.appendChild(t); t.select(); const ok = document.execCommand('copy'); t.remove(); say(ok ? 'Link copied' : 'Copy failed', ok ? 'ok' : 'err'); } })(); },
+    copy: (b) => { const text = b.kind === 'link' ? b.url : (b.note ?? b.summary ?? b.title); const what = b.kind === 'link' ? 'Link' : 'Text'; void (async () => { try { await navigator.clipboard.writeText(text); say(`${what} copied`); } catch { const t = document.createElement('textarea'); t.value = text; document.body.appendChild(t); t.select(); const ok = document.execCommand('copy'); t.remove(); say(ok ? `${what} copied` : 'Copy failed', ok ? 'ok' : 'err'); } })(); },
     edit: (b) => { setEditing(b); setNoteDraft(b.note ?? ''); },
     move: (b, categoryId) => {
       const prev = b.categoryId; setItems((all) => all.map((x) => (x.id === b.id ? { ...x, categoryId } : x)));

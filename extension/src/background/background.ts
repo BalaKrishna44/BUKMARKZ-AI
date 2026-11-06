@@ -1,5 +1,6 @@
 import { ApiError, fetchUser, saveBookmark } from '../shared/api';
 import { DASHBOARD_URL, WEB_ORIGINS } from '../shared/config';
+import { flushSession } from '../shared/flush';
 
 /** Replaced by esbuild (`false` in every normal build) so the test hook below is deleted from the shipped bundle. */
 declare const __TEST_HOOKS__: boolean | undefined;
@@ -236,6 +237,15 @@ chrome.runtime.onMessage.addListener((message: ToWorker, sender, sendResponse) =
       case 'recent:remove':
         await removeRecent(String(message.id));
         return { ok: true };
+      case 'flush:session': {
+        if (sender.tab || sender.url?.startsWith(`chrome-extension://${chrome.runtime.id}/`) !== true) return { ok: false, error: 'Not allowed from this page.' };   // only our popup
+        const wid = Number.isInteger(message.windowId) ? message.windowId : undefined;
+        const r = await flushSession({
+          queryTabs: (q) => chrome.tabs.query(q), openTab: async (url) => { await chrome.tabs.create({ url, active: true }); }, closeTabs: (ids) => chrome.tabs.remove(ids),
+          token: async () => (await liveSession())?.accessToken ?? null, hasTabsPermission: () => chrome.permissions.contains({ permissions: ['tabs'] }), fetch,
+        }, wid);
+        return r.ok ? { ok: true, flush: { url: r.url, saved: r.saved, closed: r.closed, kept: r.kept } } : { ok: false, error: r.message, code: r.error === 'not_signed_in' ? 'not_signed_in' : r.error === 'network' ? 'network' : 'server' };
+      }
       case 'queue:flush':
         await flushQueue();
         return { ok: true, items: await getRecent() };

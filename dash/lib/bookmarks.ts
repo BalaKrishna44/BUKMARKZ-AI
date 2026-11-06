@@ -7,7 +7,10 @@ export interface Bookmark {
   aiTags: string[]; userTags: string[];   // the two stored columns, kept apart so edits write back to the right one
   isTask: boolean; completedAt: string | null;   // item_type = 'oneclist_task'; completed_at is set when it is done
   faviconUrl: string | null; categoryId: string | null; createdAt: string;
+  /** 'link' = a web page (clickable). 'voice' / 'scan' = items Bukmarkz itself created (voice notes, scanned documents): no web address, never rendered as a link. */
+  kind: ItemKind;
 }
+export type ItemKind = 'link' | 'voice' | 'scan';
 /** Columns read from `oneclist_items`. Needs sql 002 (categories, ai_tags, item_type), 004 (summary) and 005 (favicon_url, meta_description). */
 export const ITEM_COLUMNS = 'id,title,url,note,tags,ai_tags,summary,meta_description,favicon_url,category_id,created_at,item_type,completed_at';
 export interface ItemRow {
@@ -21,18 +24,23 @@ export const UNSORTED = 'unsorted';
 export const TASKS = 'tasks';
 
 const isHttp = (u: string | null | undefined): u is string => { if (!u) return false; try { const p = new URL(u).protocol; return p === 'http:' || p === 'https:'; } catch { return false; } };
+/** The ONLY non-http addresses a row may carry. Anything else (javascript:, data:, other bukmarkz:// paths) is still dropped. */
+const INTERNAL = /^bukmarkz:\/\/(voice|scan)\/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+export const itemKindOf = (url: string | null | undefined): ItemKind | null => { if (!url) return null; if (isHttp(url)) return 'link'; const m = INTERNAL.exec(url); return m ? (m[1].toLowerCase() as ItemKind) : null; };
+export const sourceLabel = (b: Pick<Bookmark, 'kind' | 'url'>) => (b.kind === 'voice' ? 'Voice note' : b.kind === 'scan' ? 'Scanned document' : domainOf(b.url));
 export const domainOf = (url: string) => { try { return new URL(url).hostname.replace(/^www\./, ''); } catch { return url.slice(0, 40); } };
 
 /** Database rows are data, not code: only http(s) links survive, so a stored `javascript:` URL can never become a clickable href. */
 export function toBookmark(r: ItemRow): Bookmark | null {
-  if (!isHttp(r.url)) return null;
+  const kind = itemKindOf(r.url);
+  if (!kind) return null;
   const tags = [...(r.ai_tags ?? []), ...(r.tags ?? [])].filter((t, i, a) => t && a.indexOf(t) === i);
   return {
-    id: r.id, url: r.url, title: r.title?.trim() || domainOf(r.url), note: r.note,
+    id: r.id, url: r.url, kind, title: r.title?.trim() || (kind === 'link' ? domainOf(r.url) : kind === 'voice' ? 'Voice note' : 'Scanned document'), note: r.note,
     summary: r.summary?.trim() || r.meta_description?.trim() || null, tags,
     aiTags: (r.ai_tags ?? []).filter(Boolean), userTags: (r.tags ?? []).filter(Boolean),
     isTask: r.item_type === 'oneclist_task', completedAt: r.completed_at ?? null,
-    faviconUrl: isHttp(r.favicon_url) ? r.favicon_url : null, categoryId: r.category_id, createdAt: r.created_at,
+    faviconUrl: kind === 'link' && isHttp(r.favicon_url) ? r.favicon_url : null, categoryId: r.category_id, createdAt: r.created_at,
   };
 }
 

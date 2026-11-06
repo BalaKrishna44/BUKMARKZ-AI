@@ -11,18 +11,20 @@ const SYSTEM = [
   'If the image is not a document (a landscape, a person), use doc_type "other" with low confidence.',
 ].join('\n');
 
-export interface VisionProvider { name: string; extract(image: Uint8Array, mime: ImageMime): Promise<unknown> }
+export interface VisionHooks { model?: string; onUsage?: (u: { model: string; inputTokens: number; outputTokens: number }) => void }
+export interface VisionProvider { name: string; extract(image: Uint8Array, mime: ImageMime, hooks?: VisionHooks): Promise<unknown> }
 
 const b64 = (u: Uint8Array) => Buffer.from(u).toString('base64');
 
 export const claudeVision: VisionProvider = {
   name: 'claude',
-  extract: (image, mime) => claudeTool({
+  extract: (image, mime, hooks) => claudeTool({
     system: SYSTEM,
     toolName: 'record_document',
     schema: DOC_JSON_SCHEMA,
     maxTokens: 4096,
-    model: process.env.ANTHROPIC_VISION_MODEL,
+    model: hooks?.model ?? process.env.ANTHROPIC_VISION_MODEL,
+    onUsage: hooks?.onUsage,
     content: [
       { type: 'image', source: { type: 'base64', media_type: mime, data: b64(image) } },
       { type: 'text', text: 'Extract this document.' },
@@ -44,7 +46,7 @@ const toGemini = (s: any): any => {
 
 export const geminiVision: VisionProvider = {
   name: 'gemini',
-  async extract(image, mime) {
+  async extract(image, mime, hooks) {
     // gemini-1.5-flash has been retired; default to a current Flash model and let the env override it.
     const model = process.env.GEMINI_MODEL ?? 'gemini-2.5-flash';
     const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent`, {
@@ -60,6 +62,7 @@ export const geminiVision: VisionProvider = {
     const body: any = await res.json();
     const text = body.candidates?.[0]?.content?.parts?.[0]?.text;
     if (!text) throw new Error('gemini returned no content');
+    hooks?.onUsage?.({ model, inputTokens: body.usageMetadata?.promptTokenCount ?? 0, outputTokens: body.usageMetadata?.candidatesTokenCount ?? 0 });
     return JSON.parse(text);
   },
 };

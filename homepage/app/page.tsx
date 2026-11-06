@@ -1,6 +1,8 @@
 import type { Metadata } from 'next';
 import HomeJsonLd from '@/components/JsonLd';
 import HomePage from '@/components/HomePage';
+import { cookies, headers } from 'next/headers';
+import { CURRENCY_COOKIE, detectCurrency } from '@/lib/currency';
 
 // Server component: it renders the JSON-LD into the first HTML response, then hands off to the interactive client page.
 export const metadata: Metadata = {
@@ -20,11 +22,14 @@ export const metadata: Metadata = {
   twitter: { card: 'summary_large_image', title: 'Bukmarkz AI: Save it once. Find it by meaning.', description: 'Bookmarks, notes and reminders with AI search. 6 months of Pro free.', images: ['/assets/social/twitter-card.png'] },
 };
 
-export default function Page() {
+export default async function Page() {
+  // Country header: Vercel sets x-vercel-ip-country, Cloudflare sets cf-ipcountry. Reading it makes this page render per request (not static).
+  const [h, c] = await Promise.all([headers(), cookies()]);
+  const currency = detectCurrency({ cookie: c.get(CURRENCY_COOKIE)?.value, country: h.get('x-vercel-ip-country') ?? h.get('cf-ipcountry') });
   return (
     <>
       <HomeJsonLd />
-      <HomePage />
+      <HomePage currency={currency} />
     </>
   );
 }

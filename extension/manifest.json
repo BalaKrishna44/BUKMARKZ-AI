@@ -20,6 +20,9 @@
     "alarms",
     "notifications"
   ],
+  "optional_permissions": [
+    "tabs"
+  ],
   "host_permissions": [
     "https://www.bukmarkz.com/*",
     "https://bukmarkz.com/*"

@@ -1,0 +1,20 @@
+create or replace function t_ok(c boolean, m text) returns void language plpgsql as $$ begin if c then raise notice 'ok - %', m; else raise notice 'FAIL: %', m; end if; end $$;
+insert into auth.users(id) values ('11111111-1111-1111-1111-111111111111'),('22222222-2222-2222-2222-222222222222') on conflict do nothing;
+create or replace function t_try(sql text) returns boolean language plpgsql as $$ begin execute sql; return true; exception when others then return false; end $$;
+select t_ok(t_try($$insert into user_profiles(user_id,avatar_url) values ('11111111-1111-1111-1111-111111111111','https://abc.supabase.co/storage/v1/object/public/avatars/11111111-1111-1111-1111-111111111111/abcdef0123456789.jpg')$$), 'valid avatar address accepted');
+select t_ok(not t_try($$insert into user_profiles(user_id,avatar_url) values ('22222222-2222-2222-2222-222222222222','http://abc.supabase.co/storage/v1/object/public/avatars/x/abcdef0123456789.jpg')$$), 'http rejected');
+select t_ok(not t_try($$insert into user_profiles(user_id,avatar_url) values ('22222222-2222-2222-2222-222222222222','https://evil.com/a.jpg')$$), 'foreign address rejected');
+select t_ok(not t_try($$insert into user_profiles(user_id,avatar_url) values ('22222222-2222-2222-2222-222222222222','javascript:alert(1)')$$), 'javascript: rejected');
+select t_ok(not t_try($$insert into user_profiles(user_id,avatar_url) values ('22222222-2222-2222-2222-222222222222','https://abc.supabase.co/storage/v1/object/public/avatars/../../x/abcdef0123456789.jpg')$$), 'path tricks rejected');
+insert into user_profiles(user_id,avatar_url) values ('22222222-2222-2222-2222-222222222222', null);
+set role authenticated; select set_config('request.jwt.claim.sub','11111111-1111-1111-1111-111111111111',false);
+select t_ok((select count(*) from user_profiles) = 1, 'user sees only their own row');
+select t_ok(not t_try($$update user_profiles set avatar_url = null$$), 'user cannot update directly');
+select t_ok(not t_try($$insert into user_profiles(user_id) values ('11111111-1111-1111-1111-111111111111')$$), 'user cannot insert directly');
+reset role; set role anon;
+select t_ok(not t_try($$select * from user_profiles$$), 'anon cannot read');
+reset role;
+delete from auth.users where id='22222222-2222-2222-2222-222222222222';
+select t_ok((select count(*) from user_profiles) = 1, 'row deleted with the account');
+\ir ../sql/031_avatars.sql
+select t_ok(true, 'migration re-runs cleanly');

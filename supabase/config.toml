@@ -1,0 +1,8 @@
+[functions.weekly-digest]
+verify_jwt = false   # auth is the CRON_SECRET bearer, checked in the function
+
+[functions.send-friday-digest]
+verify_jwt = false   # auth is the CRON_SECRET bearer, checked in the function
+
+[functions.check-link-health]
+verify_jwt = false   # auth is the CRON_SECRET bearer, checked in the function

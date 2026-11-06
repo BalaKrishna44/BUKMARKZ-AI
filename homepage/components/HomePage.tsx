@@ -6,7 +6,9 @@ import {
   ArrowRight, Bell, Bookmark, Check, ChevronDown, Chrome, Clock, Gift, ListChecks,
   Menu, MessageCircle, Minus, Play, Search, Smartphone, Sparkles, Users, X,
 } from 'lucide-react';
-import { FAQS, PRICE, SAVE_PERCENT, TRIAL_MONTHS, usd } from '@/lib/site-data';
+import { FAQS, PRICE, TRIAL_MONTHS, usd } from '@/lib/site-data';
+import { Buk, Markz } from '@/components/brand/Mascots';
+import { CURRENCIES, CURRENCY_COOKIE, CURRENCY_NAME, PRICES, formatMoney, proPerMonthWhenAnnual, savePercent, type CurrencyCode } from '@/lib/currency';
 
 /* ==========================================================================
    Edit this block first. Everything the page claims is driven from here.
@@ -87,7 +89,12 @@ const useReducedMotion = () => {
 
 /* ================================================================== page */
 
-export default function HomePage() {
+export default function HomePage({ currency: initialCurrency = 'USD' }: { currency?: CurrencyCode }) {
+  const [currency, setCurrencyState] = useState<CurrencyCode>(initialCurrency);
+  const setCurrency = useCallback((c: CurrencyCode) => {
+    setCurrencyState(c);
+    try { document.cookie = `${CURRENCY_COOKIE}=${c}; path=/; max-age=31536000; samesite=lax`; } catch { /* cookies blocked: the choice just lasts for this visit */ }
+  }, []);
   const [demoToken, setDemoToken] = useState(0);
   const watchDemo = useCallback(() => {
     document.getElementById('demo')?.scrollIntoView({ behavior: window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth', block: 'center' });
@@ -103,7 +110,7 @@ export default function HomePage() {
         <ProofWall />
         <Pillars />
         <Comparison />
-        <Pricing />
+        <Pricing currency={currency} onCurrencyChange={setCurrency} />
         <Faq />
         <FinalCta />
       </main>
@@ -186,8 +193,15 @@ function Hero({ onWatchDemo, demoToken }: { onWatchDemo: () => void; demoToken: 
             ))}
           </ul>
         </div>
-        <DemoCard playToken={demoToken} />
+        <div className="relative">
+          <div aria-hidden="true" className="pointer-events-none absolute -top-[5.25rem] left-4 z-10 hidden items-end gap-1 sm:flex">
+            <Buk className="h-20 w-20 drop-shadow-[0_8px_16px_rgba(0,0,0,0.45)] motion-safe:animate-[bk-float_5s_ease-in-out_infinite]" />
+            <Markz className="h-16 w-16 drop-shadow-[0_8px_16px_rgba(0,0,0,0.45)] motion-safe:animate-[bk-float_5s_ease-in-out_1.2s_infinite]" />
+          </div>
+          <DemoCard playToken={demoToken} />
+        </div>
       </div>
+      <style>{`@keyframes bk-float{0%,100%{transform:translateY(0)}50%{transform:translateY(-6px)}}`}</style>
     </section>
   );
 }
@@ -290,7 +304,7 @@ function DemoCard({ playToken }: { playToken: number }) {
           <div className="mt-4 min-h-[280px] space-y-3" role="log" aria-live="polite" aria-label="Demo conversation">
             {script.lines.slice(0, shown).map((l, i) => (
               <div key={`${key}-${i}`} className={`flex gap-2.5 ${l.who === 'you' ? 'justify-end' : ''}`}>
-                {l.who !== 'you' && <span className={`mt-1 grid h-6 w-6 shrink-0 place-items-center rounded-full text-[9px] font-bold text-[#0a0e1a] ${WHO[l.who].badge}`} aria-hidden="true">{l.who === 'buk' ? 'B' : 'M'}</span>}
+                {l.who !== 'you' && <span className={`mt-1 grid h-8 w-8 shrink-0 place-items-center overflow-hidden rounded-full ring-1 ring-white/15 bg-slate-800`} aria-hidden="true">{l.who === 'buk' ? <Buk className="h-7 w-7" /> : <Markz className="h-7 w-7" />}</span>}
                 <div className={`max-w-[85%] rounded-xl px-3 py-2 text-[13px] leading-snug ${WHO[l.who].cls}`}>
                   {l.who !== 'you' && <span className="mb-0.5 block text-[10px] font-semibold uppercase tracking-wider opacity-70">{WHO[l.who].name}</span>}
                   {l.text}
@@ -538,18 +552,21 @@ function Comparison() {
 
 type Value = boolean | string;
 const FEATURES: Array<{ label: string; free: Value; pro: Value; team: Value; status?: Status }> = [
-  // NOTE: limits are placeholders. Replace with your real quotas.
-  { label: 'Saved links', free: 'Up to 100', pro: 'Unlimited', team: 'Unlimited' },
-  { label: 'AI actions', free: '10 per month', pro: '500 per month', team: '1,500 per user / month' },
+  // Mirrors PLAN_LIMITS (plan-gating/lib/planLimits.ts); `node pricing/check-limits.mjs` checks the copy in pricing/PricingTable.tsx.
+  { label: 'Ask Your Vault (AI answers with sources)', free: '20 per month', pro: '1,000 per month', team: '1,500 per user / month' },
+  { label: 'AI-indexed links (search + Ask)', free: 'Up to 300', pro: 'Up to 25,000', team: 'Up to 25,000', status: STATUS.vaultSearch },
+  { label: 'Vault MCP for Claude Desktop and Cursor', free: '50 calls / month, read-only', pro: '10,000 calls / month, read + save', team: '10,000 calls / month' },
+  { label: 'Page snapshots (permanent copies)', free: false, pro: '500 per month', team: '1,000 per month' },
   { label: '1-click share sheet', free: true, pro: true, team: true, status: STATUS.chromeSave },
-  { label: 'Permanent web archiving', free: false, pro: true, team: true, status: 'soon' },
-  { label: 'Vector (meaning-based) search', free: false, pro: true, team: true, status: STATUS.vaultSearch },
   { label: 'WhatsApp and Telegram bot', free: false, pro: true, team: true, status: STATUS.chatBots },
 ];
 
-function Pricing() {
+function Pricing({ currency, onCurrencyChange }: { currency: CurrencyCode; onCurrencyChange: (c: CurrencyCode) => void }) {
   const [annual, setAnnual] = useState(false);
-  const proPerMonth = annual ? PRICE.proAnnual / 12 : PRICE.proMonthly;
+  const P = PRICES[currency];
+  const fmt = (n: number) => formatMoney(n, currency);
+  const SAVE_PERCENT = savePercent(currency);
+  const proPerMonth = annual ? proPerMonthWhenAnnual(currency) : P.proMonthly;
 
   return (
     <section id="pricing" className="scroll-mt-16 px-4 py-20 sm:px-6 sm:py-28">
@@ -564,10 +581,18 @@ function Pricing() {
           <span className={annual ? 'font-medium text-white' : 'text-slate-500'}>Annual</span>
           <span className="rounded-full bg-emerald-400/10 px-2 py-0.5 text-xs font-medium text-emerald-300 ring-1 ring-inset ring-emerald-400/20">Save {SAVE_PERCENT}%</span>
         </div>
+        <div className="mt-4 flex justify-center">
+          <label className="flex items-center gap-2 text-sm text-slate-400">
+            <span>Currency</span>
+            <select value={currency} onChange={(e) => onCurrencyChange(e.target.value as CurrencyCode)} className="rounded-lg border border-slate-600 bg-slate-900 px-2 py-1 text-slate-100">
+              {CURRENCIES.map((c) => <option key={c} value={c}>{CURRENCY_NAME[c]}</option>)}
+            </select>
+          </label>
+        </div>
 
         <div className="mt-12 grid grid-cols-1 items-stretch gap-5 md:grid-cols-3 lg:gap-6">
           <PlanCard name="Free" blurb="For trying Bukmarkz and light saving." plan="free">
-            <PriceTag amount="$0" unit="forever" />
+            <PriceTag amount={fmt(0)} unit="forever" />
             <p className="mt-1 min-h-[2.5rem] text-sm text-slate-500">&nbsp;</p>
             <a href={LINKS.free} className={`${ghostBtn} mt-2 w-full`}>Get Started Free</a>
           </PlanCard>
@@ -580,20 +605,20 @@ function Pricing() {
               </div>
             </div>
             <div className="flex items-end gap-2">
-              {annual && <span className="pb-1 text-lg text-slate-600 line-through"><span className="sr-only">was </span>{usd(PRICE.proMonthly)}</span>}
-              <PriceTag amount={usd(proPerMonth)} unit="/ month" live />
+              {annual && <span className="pb-1 text-lg text-slate-600 line-through"><span className="sr-only">was </span>{fmt(P.proMonthly)}</span>}
+              <PriceTag amount={fmt(proPerMonth)} unit="/ month" live />
             </div>
-            <p className="mt-1 min-h-[2.5rem] text-sm text-slate-500" aria-live="polite">{annual ? `Billed ${usd(PRICE.proAnnual)} per year.` : 'Billed monthly.'} <span className="text-slate-300">Free for {TRIAL_MONTHS} months first.</span></p>
+            <p className="mt-1 min-h-[2.5rem] text-sm text-slate-500" aria-live="polite">{annual ? `Billed ${fmt(P.proAnnual)} per year.` : 'Billed monthly.'} <span className="text-slate-300">Free for {TRIAL_MONTHS} months first.</span></p>
             <a href={LINKS.claim} className={`${amberBtn} mt-2 w-full`}>Claim {TRIAL_MONTHS} Months Free Pro</a>
           </PlanCard>
 
           <PlanCard name="Team" blurb="Shared knowledge for teams that research together." plan="team" icon={<Users className="h-4 w-4 text-slate-500" aria-hidden="true" />}>
-            <PriceTag amount={usd(PRICE.teamMonthly)} unit="/ user / month" />
+            <PriceTag amount={fmt(P.teamMonthly)} unit="/ user / month" />
             <p className="mt-1 min-h-[2.5rem] text-sm text-slate-500">Annual and volume pricing from sales.</p>
             <a href={LINKS.sales} className={`${ghostBtn} mt-2 w-full`}>Contact Sales</a>
           </PlanCard>
         </div>
-        <p className="mt-8 text-center text-xs text-slate-500">Prices in USD. Pro billing starts only after your {TRIAL_MONTHS}-month free trial ends.</p>
+        <p className="mt-8 text-center text-xs text-slate-500">Prices shown in {currency} and charged in {currency}. Pro billing starts only after your {TRIAL_MONTHS}-month free trial ends.</p>
       </div>
     </section>
   );

@@ -1,4 +1,5 @@
 import { admin } from '../server';
+import { assertBudget, recordUsage, FALLBACK_MODEL } from '@/lib/ai/circuitBreaker';
 import { writeScript, type SourceDoc } from './script';
 import { synthesizeScript } from './tts';
 import { mp3DurationSec } from './audio';
@@ -14,7 +15,11 @@ export async function produceEpisode(ep: any) {
     .filter((d) => d.text.trim().length > 80);
   if (!docs.length) throw new Error('none of the selected items has readable text');
 
-  const script = await writeScript(docs, { targetMinutes: ep.target_minutes, style: ep.style });
+  // AI cost control: throws BudgetExceededError (the caller records it as the episode error) when the allowance is spent.
+  const budget = await assertBudget(ep.user_id);
+  const usage: { model: string; inputTokens: number; outputTokens: number }[] = [];
+  const script = await writeScript(docs, { targetMinutes: ep.target_minutes, style: ep.style, model: budget.degraded ? FALLBACK_MODEL() : undefined, onUsage: (u) => usage.push(u) });
+  for (const u of usage) await recordUsage({ userId: ep.user_id, feature: 'podcast', model: u.model, inputTokens: u.inputTokens, outputTokens: u.outputTokens, degraded: budget.degraded });
   await admin.from('podcast_episodes').update({ status: 'synthesizing', script: script.turns, title: script.episode_title, description: script.description }).eq('id', ep.id);
 
   const voices = { A: ep.voice_a ?? DEFAULT_VOICES.A, B: ep.voice_b ?? DEFAULT_VOICES.B };

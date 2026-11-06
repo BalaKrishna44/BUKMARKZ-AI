@@ -1,4 +1,5 @@
 import { randomUUID } from 'node:crypto';
+import { assertBudget, recordUsage, BudgetExceededError, FALLBACK_MODEL } from '@/lib/ai/circuitBreaker';
 import { admin, json, requireUser } from '@/lib/server';
 import { pickProvider, parseDoc } from '@/lib/vision/providers';
 import { reconcile, type Doc } from '@/lib/vision/schema';
@@ -40,15 +41,24 @@ export async function POST(req: Request) {
     if (!own) return json({ error: 'item_not_found' }, 404);
   }
 
+  // AI cost control: stop (402) if this user's monthly AI allowance is spent; use the cheap model when they are over budget.
+  let budget;
+  try { budget = await assertBudget(user.id); }
+  catch (e) { if (e instanceof BudgetExceededError) return json(e.toJSON(), 402); throw e; }
+  const usage: { model: string; inputTokens: number; outputTokens: number }[] = [];
+
   let doc: Doc;
   try {
-    const raw = await pickProvider(String(form?.get('provider') ?? '') || null).extract(bytes, mime);
+    const raw = await pickProvider(String(form?.get('provider') ?? '') || null)
+      .extract(bytes, mime, { model: budget.degraded ? FALLBACK_MODEL() : undefined, onUsage: (u) => usage.push(u) });
     const parsed = parseDoc(raw);
     const r = reconcile(parsed);
     doc = { ...parsed, confidence: r.confidence, warnings: r.warnings };
   } catch (e: any) {
     return json({ error: 'extraction_failed', detail: String(e?.message ?? e).slice(0, 200) }, 502);
   }
+
+  for (const u of usage) await recordUsage({ userId: user.id, feature: 'ocr', model: u.model, inputTokens: u.inputTokens, outputTokens: u.outputTokens, degraded: budget.degraded });
 
   const title = doc.title || [doc.vendor, doc.doc_type.replace('_', ' '), doc.date].filter(Boolean).join(' · ') || 'Scanned document';
   // Searchable text: a header line (so searching "Blue Bottle receipt" works) + takeaways + full transcription.

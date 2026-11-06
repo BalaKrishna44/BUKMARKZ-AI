@@ -11,6 +11,7 @@ export const WEB_ORIGINS: readonly string[] =
 /** The Next.js app serves /api/ingest itself, so the API lives on the web origin. */
 export const API_BASE: string = (typeof __API_BASE__ !== 'undefined' ? __API_BASE__ : WEB_ORIGINS[0]).replace(/\/+$/, '');
 export const INGEST_PATH = '/api/ingest';
+export const SESSION_PATH = '/api/vault/session';
 /** Flip to true when the server actually extracts text from images, so the menu label never over-promises. */
 export const OCR_AVAILABLE = false;
 export const DASHBOARD_URL = `${WEB_ORIGINS[0]}/`;

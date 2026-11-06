@@ -1,0 +1,18 @@
+import { POST } from '../app/api/save/route';
+import { state } from './save.stubs';
+const call=(body:any,h:Record<string,string>={})=>POST(new Request('https://www.bukmarkz.com/api/save',{method:'POST',headers:{'content-type':'application/json',...h},body:typeof body==='string'?body:JSON.stringify(body)}));
+let fails=0; const eq=async(m:string,p:Promise<Response>,s:number,chk?:(j:any)=>boolean)=>{const r=await p;const j=await r.json().catch(()=>({}));const ok=r.status===s&&(!chk||chk(j));if(!ok){fails++;console.log('FAIL',m,r.status,j)}else console.log('ok',m)};
+await eq('201 new',call({url:'https://Example.com/a?utm_source=x',title:'T'}),201,j=>!!j.id);
+await eq('dedupe by canonical key',call({url:'https://www.example.com/a'}),200,j=>j.alreadySaved===true);
+console.log(' gate calls',state.gate,'rows',state.rows.length,'source',state.rows[0].source,'ai_status',state.rows[0].ai_status);
+await eq('bad scheme',call({url:'javascript:alert(1)'}),422,j=>j.reason==='unsupported-scheme');
+await eq('creds in url',call({url:'https://a:b@x.com'}),422);
+await eq('not json ctype',POST(new Request('https://www.bukmarkz.com/api/save',{method:'POST',headers:{'content-type':'text/plain'},body:'{}'})),415);
+await eq('cross-origin cookie post',call({url:'https://x.com'},{origin:'https://evil.test'}),403);
+await eq('same origin ok',call({url:'https://x.com/ok'},{origin:'https://www.bukmarkz.com'}),201);
+await eq('bad json',call('{nope'),400);
+await eq('too large',call({url:'https://x.com/'+'a'.repeat(30000)}),413);
+state.limit=true; await eq('limit -> 402, no insert',call({url:'https://x.com/new'}),402); console.log(' rows',state.rows.length);
+state.limit=false; state.failInsert={code:'XX'}; const rf=state.refunds; await eq('db error -> 500',call({url:'https://x.com/db'}),500); console.log(' refunded',state.refunds-rf===1);
+state.failInsert=null; state.user=null; await eq('unauthenticated',call({url:'https://x.com/u'}),401);
+process.exit(fails?1:0);

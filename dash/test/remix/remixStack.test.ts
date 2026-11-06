@@ -1,0 +1,25 @@
+import { remixStack, resumeRemix, INTENT_COOKIE } from '../../app/actions/remixStack';
+import { state } from './stubs';
+let pass=0,fail=0; const ok=(c:boolean,m:string)=>{c?(pass++,console.log('ok  ',m)):(fail++,console.error('FAIL',m))};
+const fd=(o:Record<string,string>)=>{const f=new FormData();for(const k in o)f.set(k,o[k]);return f};
+const run=async(f:()=>Promise<any>)=>{state.redirected='';try{return await f()}catch(e:any){if(e.message!=='NEXT_REDIRECT')throw e}};
+(async()=>{
+ let r:any=await run(()=>remixStack(null,fd({slug:'../etc'}))); ok(r?.error==='invalid'&&!state.rpc.length,'bad slug rejected before any DB call');
+ r=await run(()=>remixStack(null,fd({slug:'ai-dev-2026',user_id:'victim'}))); 
+ ok(/^\/signup\?next=%2Fs%2Fai-dev-2026%2Ffork%3Faction%3Dremix&action=remix$/.test(state.redirected),'signed-out -> signup with next + action=remix: '+state.redirected);
+ ok(state.cookies.get(INTENT_COOKIE)==='ai-dev-2026'&&state.opts.httpOnly&&state.opts.sameSite==='lax'&&!state.rpc.length,'intent cookie httpOnly/lax, no DB call yet');
+ state.user={id:'u1'};
+ r=await run(()=>remixStack(null,fd({slug:'AI-Dev-2026',user_id:'victim'})));
+ ok(state.rpc.length===1&&state.rpc[0][0]==='fork_stack'&&JSON.stringify(state.rpc[0][1])==='{"p_slug":"ai-dev-2026"}','signed-in: one fork_stack call, slug only (client user_id ignored)');
+ ok(state.redirected==='/dashboard?forked=ai-dev-2026&added=4','redirects to dashboard with count');
+ state.rpc.length=0; state.cookies.set(INTENT_COOKIE,'other-stack'); r=await run(()=>resumeRemix('ai-dev-2026'));
+ ok(r?.error==='invalid'&&!state.rpc.length,'resume refuses when intent cookie is for another stack (link-CSRF)');
+ state.cookies.delete(INTENT_COOKIE); r=await run(()=>resumeRemix('ai-dev-2026')); ok(r?.error==='invalid'&&!state.rpc.length,'resume refuses with no cookie');
+ state.cookies.set(INTENT_COOKIE,'ai-dev-2026'); r=await run(()=>resumeRemix('ai-dev-2026'));
+ ok(state.rpc.length===1&&!state.cookies.has(INTENT_COOKIE),'resume with matching cookie runs once and clears the cookie');
+ state.rpc.length=0; r=await run(()=>resumeRemix('ai-dev-2026')); ok(!state.rpc.length,'second resume does nothing');
+ state.rpcResult={data:null,error:{code:'P0001',message:'not_found'}}; r=await run(()=>remixStack(null,fd({slug:'gone-stack'}))); ok(r?.error==='not_found','private/blocked/missing stack -> not_found');
+ state.rpcResult={data:null,error:{code:'XX',message:'db.internal:5432'}}; r=await run(()=>remixStack(null,fd({slug:'gone-stack'}))); ok(r?.error==='failed'&&!JSON.stringify(r).includes('5432'),'unknown error is generic');
+ state.user=null; state.cookies.set(INTENT_COOKIE,'ai-dev-2026'); await run(()=>resumeRemix('ai-dev-2026')); ok(/^\/login\?next=/.test(state.redirected),'resume while signed-out goes to login, not fork');
+ console.log(`${pass} passed, ${fail} failed`); process.exit(fail?1:0);
+})();

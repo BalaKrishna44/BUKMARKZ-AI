@@ -1,0 +1,13 @@
+{
+  "name": "bukmarkz-qa-suite",
+  "private": true,
+  "scripts": {
+    "test:e2e": "playwright test",
+    "test:mcp": "tsx --tsconfig tsconfig.json --test tests/mcp-api.test.ts",
+    "test:csp": "tsx --test security/csp.test.ts",
+    "test:rls": "supabase test db",
+    "test:rls:local": "sh supabase/tests/_sandbox/run_local.sh",
+    "preflight": "node scripts/preflight.mjs"
+  },
+  "devDependencies": { "@playwright/test": "^1.48.0", "@supabase/supabase-js": "^2.45.0", "tsx": "^4.19.0", "typescript": "^5.5.0" }
+}

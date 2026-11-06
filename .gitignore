@@ -12,3 +12,6 @@ __pycache__/
 dist/
 db.sqlite3
 .DS_Store
+
+*.tsbuildinfo
+next-env.d.ts

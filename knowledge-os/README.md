@@ -63,3 +63,9 @@ Daily episode cap, daily scan cap, 200-feed cap, 10 items per episode, 6,000 cha
 - `GET /api/podcast/rss?token=...` is the same feed as `/api/podcast/{token}/feed.xml` (prefer the path form: query strings end up in more logs).
 - Env: `ANTHROPIC_MODEL` (script), `TTS_PROVIDER=openai|elevenlabs`, `OPENAI_TTS_MODEL` (e.g. `tts-1`), `TTS_VOICE_A/B`, `R2_*`, `APP_URL`, `CRON_SECRET`, optional `PODCAST_IMAGE_URL` (square JPG/PNG, 1400-3000 px), `PODCAST_CATEGORY`, `PODCAST_OWNER_EMAIL`, `PODCAST_EPISODES_PER_DAY` (default 5).
 - Needs `ai_status` on `oneclist_items` (importexport 001) to skip private saves. Not yet run against real Supabase, R2, Anthropic or OpenAI.
+
+## 6. Offline page archive (`lib/archive/`, `sql/009_archive.sql`)
+
+`POST /api/archive {itemId}` (or the `*/5` cron) fetches the page through `safeFetch` (SSRF-safe), extracts the article with JSDOM + Readability (scripts never run), converts to Markdown with Turndown (fenced code with language hints, absolute http(s) links only), then writes `<user_id>/<item_id>.md` to the private `archives` bucket and the Markdown to `oneclist_items.full_markdown_content` (generated `archive_fts` index; `search_archive(q)` ranks with snippets). Failures store a short code in `archive_error`; the cron retries up to 3 times.
+Install: `npm i jsdom @mozilla/readability turndown turndown-plugin-gfm` (+ `@types/jsdom @types/turndown`). Reader (dash): `npm i react-markdown remark-gfm react-syntax-highlighter @types/react-syntax-highlighter`.
+Tested: 36 logic checks with fakes (`tsx test/archive.test.ts`) and `009_archive.sql` on PostgreSQL 16 (idempotent, RLS-safe search, CJK, check constraints). **Not run:** the real JSDOM/Readability/Turndown path, Supabase Storage, and the React reader (syntax-checked only).

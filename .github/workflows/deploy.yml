@@ -1,0 +1,42 @@
+name: Deploy to Coolify
+# Runs only after CI succeeded on main. Coolify pulls the repo from GitHub and builds app-shell/docker-compose.yml itself;
+# this workflow just tells Coolify to start that deploy. Turn OFF "auto deploy on push" in Coolify so there is one trigger, not two.
+on:
+  workflow_run:
+    workflows: [CI]
+    types: [completed]
+    branches: [main]
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: deploy-production
+  cancel-in-progress: false
+jobs:
+  deploy:
+    if: github.event_name == 'workflow_dispatch' || github.event.workflow_run.conclusion == 'success'
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    environment: production        # add required reviewers in GitHub -> Settings -> Environments if you want a manual approval gate
+    steps:
+      - name: Trigger Coolify deploy
+        env:
+          COOLIFY_URL: ${{ secrets.COOLIFY_URL }}          # e.g. https://coolify.example.com (no trailing slash)
+          COOLIFY_APP_UUID: ${{ secrets.COOLIFY_APP_UUID }}
+          COOLIFY_TOKEN: ${{ secrets.COOLIFY_TOKEN }}      # Coolify -> Keys & Tokens -> API tokens (deploy permission only)
+        run: |
+          set -euo pipefail
+          code=$(curl -sS -o /tmp/resp -w '%{http_code}' --max-time 60 \
+            -H "Authorization: Bearer ${COOLIFY_TOKEN}" \
+            "${COOLIFY_URL}/api/v1/deploy?uuid=${COOLIFY_APP_UUID}&force=false")
+          echo "Coolify answered HTTP ${code}"
+          [ "${code}" = "200" ] || { echo "Deploy trigger failed"; exit 1; }
+      - name: Wait for the site to answer
+        env:
+          SITE: ${{ secrets.SITE_URL }}                      # https://bukmarkz.com
+        run: |
+          for i in $(seq 1 30); do
+            if curl -fsS --max-time 10 "${SITE}/api/health" | grep -qx ok; then echo "healthy"; exit 0; fi
+            sleep 20
+          done
+          echo "Site did not become healthy in 10 minutes"; exit 1

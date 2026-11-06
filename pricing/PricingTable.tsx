@@ -1,23 +1,17 @@
+'use client';
+
 import { useId, useState } from 'react';
 import { Check, Gift, Minus, Users } from 'lucide-react';
 import type { ComponentType, ReactNode, SVGProps } from 'react';
+import { CURRENCIES, CURRENCY_NAME, PRICES, formatMoney, proPerMonthWhenAnnual, savePercent, type CurrencyCode } from './currency';
 
 /* ------------------------------------------------------------------ data */
 
 export type Billing = 'monthly' | 'annual';
 export type PlanId = 'free' | 'pro' | 'team';
 
-/** All prices live here. Everything on screen, including the "Save 35%" badge, is derived from these numbers. */
-const PRICE = {
-  proMonthly: 4.99,
-  proAnnual: 39, // per year
-  teamMonthly: 12.99, // per user
-} as const;
-
-const SAVE_PERCENT = Math.round((1 - PRICE.proAnnual / (PRICE.proMonthly * 12)) * 100); // 35
 const TRIAL_MONTHS = 6;
 
-const usd = (n: number) => `$${n.toFixed(2)}`;
 
 /** true = included, false = not included, string = included with a limit or note. */
 type Value = boolean | string;
@@ -29,13 +23,16 @@ interface Feature {
   team: Value;
 }
 
-/** NOTE: the limits below (100 links, 10/500/1,500 AI actions) are placeholders. Replace them with your real quotas. */
+/**
+ * Limits mirror PLAN_LIMITS in plan-gating/lib/planLimits.ts (the enforced numbers). `node pricing/check-limits.mjs` fails if they drift.
+ * Team caps are placeholders in planLimits.ts as well: change both together.
+ */
 const FEATURES: Feature[] = [
-  { label: 'Saved links', free: 'Up to 100', pro: 'Unlimited', team: 'Unlimited' },
-  { label: 'AI actions', free: '10 per month', pro: '500 per month', team: '1,500 per user / month' },
+  { label: 'Ask Your Vault (AI answers with sources)', free: '20 per month', pro: '1,000 per month', team: '1,500 per user / month' },
+  { label: 'AI-indexed links (search + Ask)', free: 'Up to 300', pro: 'Up to 25,000', team: 'Up to 25,000' },
+  { label: 'Vault MCP for Claude Desktop and Cursor', free: '50 calls / month, read-only', pro: '10,000 calls / month, read + save', team: '10,000 calls / month' },
+  { label: 'Page snapshots (permanent copies)', free: false, pro: '500 per month', team: '1,000 per month' },
   { label: '1-click share sheet', free: true, pro: true, team: true },
-  { label: 'Permanent web archiving', free: false, pro: true, team: true },
-  { label: 'Vector (meaning-based) search', free: false, pro: true, team: true },
   { label: 'WhatsApp and Telegram bot', free: false, pro: true, team: true },
 ];
 
@@ -43,17 +40,24 @@ const FEATURES: Feature[] = [
 
 export interface PricingTableProps {
   defaultBilling?: Billing;
+  /** Detected on the server with detectCurrency() (cookie, then country header, then USD). */
+  currency?: CurrencyCode;
+  /** Called when the visitor picks another currency; save it in the `bk_currency` cookie and re-render. */
+  onCurrencyChange?: (c: CurrencyCode) => void;
   /** Called when a plan's button is pressed. Contact Sales opens `salesHref` instead. */
   onSelectPlan?: (plan: 'free' | 'pro', billing: Billing) => void;
   salesHref?: string;
 }
 
-export default function PricingTable({ defaultBilling = 'monthly', onSelectPlan, salesHref = 'mailto:sales@bukmarkz.com?subject=Bukmarkz%20Team%20plan' }: PricingTableProps) {
+export default function PricingTable({ defaultBilling = 'monthly', currency = 'USD', onCurrencyChange, onSelectPlan, salesHref = 'mailto:sales@bukmarkz.com?subject=Bukmarkz%20Team%20plan' }: PricingTableProps) {
   const [billing, setBilling] = useState<Billing>(defaultBilling);
   const annual = billing === 'annual';
   const switchId = useId();
 
-  const proPerMonth = annual ? PRICE.proAnnual / 12 : PRICE.proMonthly;
+  const P = PRICES[currency];
+  const fmt = (n: number) => formatMoney(n, currency);
+  const SAVE_PERCENT = savePercent(currency);
+  const proPerMonth = annual ? proPerMonthWhenAnnual(currency) : P.proMonthly;
 
   return (
     <section aria-labelledby="pricing-title" className="relative isolate overflow-hidden bg-[#05070d] px-4 py-16 text-slate-100 sm:px-6 sm:py-24">
@@ -88,11 +92,19 @@ export default function PricingTable({ defaultBilling = 'monthly', onSelectPlan,
           <span className={annual ? 'font-semibold text-white' : 'text-slate-400'}>Annual</span>
           <span className="rounded-full bg-emerald-400/15 px-2.5 py-1 text-xs font-semibold text-emerald-300">Save {SAVE_PERCENT}%</span>
         </div>
+        <div className="mt-4 flex justify-center">
+          <label className="flex items-center gap-2 text-sm text-slate-400">
+            <span>Currency</span>
+            <select value={currency} onChange={(e) => onCurrencyChange?.(e.target.value as CurrencyCode)} className="rounded-lg border border-slate-600 bg-slate-900 px-2 py-1 text-slate-100">
+              {CURRENCIES.map((c) => <option key={c} value={c}>{CURRENCY_NAME[c]}</option>)}
+            </select>
+          </label>
+        </div>
 
         <div className="mt-12 grid items-stretch gap-6 md:grid-cols-3 md:gap-5 lg:gap-8">
           {/* ---------------------------------------------------------- Free */}
           <PlanCard name="Free" blurb="For trying Bukmarkz and light everyday saving." plan="free">
-            <Price amount="$0" unit="forever" />
+            <Price amount={fmt(0)} unit="forever" />
             <p className="mt-1 min-h-[2.5rem] text-sm text-slate-400">&nbsp;</p>
             <Button variant="outline" onClick={() => onSelectPlan?.('free', billing)}>Get Started Free</Button>
             <FeatureList plan="free" />
@@ -111,11 +123,11 @@ export default function PricingTable({ defaultBilling = 'monthly', onSelectPlan,
             </div>
 
             <div className="flex items-end gap-2">
-              {annual && <span className="pb-1 text-lg text-slate-500 line-through" aria-label={`was ${usd(PRICE.proMonthly)} per month`}>{usd(PRICE.proMonthly)}</span>}
-              <Price amount={usd(proPerMonth)} unit="/ month" live />
+              {annual && <span className="pb-1 text-lg text-slate-500 line-through" aria-label={`was ${fmt(P.proMonthly)} per month`}>{fmt(P.proMonthly)}</span>}
+              <Price amount={fmt(proPerMonth)} unit="/ month" live />
             </div>
             <p className="mt-1 min-h-[2.5rem] text-sm text-slate-400" aria-live="polite">
-              {annual ? `Billed ${usd(PRICE.proAnnual)} per year.` : 'Billed monthly.'}{' '}
+              {annual ? `Billed ${fmt(P.proAnnual)} per year.` : 'Billed monthly.'}{' '}
               <span className="text-slate-300">Free for {TRIAL_MONTHS} months first, no card needed.</span>
             </p>
             <Button variant="primary" onClick={() => onSelectPlan?.('pro', billing)}>Claim {TRIAL_MONTHS} Months Free Pro</Button>
@@ -124,7 +136,7 @@ export default function PricingTable({ defaultBilling = 'monthly', onSelectPlan,
 
           {/* ----------------------------------------------------------- Team */}
           <PlanCard name="Team" blurb="Shared knowledge for teams that research together." plan="team" icon={Users}>
-            <Price amount={usd(PRICE.teamMonthly)} unit="/ user / month" />
+            <Price amount={fmt(P.teamMonthly)} unit="/ user / month" />
             <p className="mt-1 min-h-[2.5rem] text-sm text-slate-400">Annual and volume pricing available from sales.</p>
             <a
               href={salesHref}
@@ -136,7 +148,7 @@ export default function PricingTable({ defaultBilling = 'monthly', onSelectPlan,
           </PlanCard>
         </div>
 
-        <p className="mt-10 text-center text-xs text-slate-500">Prices in USD. Pro billing starts only after your {TRIAL_MONTHS}-month free trial ends.</p>
+        <p className="mt-10 text-center text-xs text-slate-500">Prices shown in {currency} and charged in {currency}. Pro billing starts only after your {TRIAL_MONTHS}-month free trial ends.</p>
       </div>
     </section>
   );
