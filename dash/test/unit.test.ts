@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { applyChange, normalizeTag, parseTagInput, rowFromPayload, splitTags, toBookmark, type ItemRow } from '../lib/bookmarks';
+import { itemKindOf, sourceLabel, applyChange, normalizeTag, parseTagInput, rowFromPayload, splitTags, toBookmark, type ItemRow } from '../lib/bookmarks';
 import { safeNext } from '../lib/safeNext';
 
 const row = (o: Partial<ItemRow> = {}): ItemRow => ({ id: 'a', title: 'T', url: 'https://x.com/a', note: null, tags: [], ai_tags: [], summary: null, meta_description: null, favicon_url: null, category_id: null, created_at: '2026-01-02T00:00:00Z', item_type: 'link', completed_at: null, ...o });
@@ -45,4 +45,15 @@ test('applyChange: insert newest-first, idempotent update, delete, unsafe url re
 test('safeNext only allows same-site paths', () => {
   for (const ok of ['/dashboard', '/dashboard?x=1#h', '/a/b']) assert.equal(safeNext(ok), ok);
   for (const bad of ['https://evil.test', '//evil.test', '/\\evil.test', 'javascript:alert(1)', 'dashboard', '', null, undefined, '/ok\n/evil', '/' + 'a'.repeat(600)]) assert.equal(safeNext(bad as string), '/dashboard', String(bad));
+});
+
+test('toBookmark: voice notes and scans are kept as non-link items; other bukmarkz:// or unsafe urls are still dropped', () => {
+  const id = '123e4567-e89b-12d3-a456-426614174000';
+  const v = toBookmark(row({ url: `bukmarkz://voice/${id}`, title: null }))!;
+  assert.equal(v.kind, 'voice'); assert.equal(v.title, 'Voice note'); assert.equal(sourceLabel(v), 'Voice note'); assert.equal(v.faviconUrl, null);
+  assert.equal(toBookmark(row({ url: `bukmarkz://scan/${id}` }))!.kind, 'scan');
+  assert.equal(toBookmark(row({ url: 'https://x.com/a' }))!.kind, 'link');
+  for (const bad of [`bukmarkz://evil/${id}`, `bukmarkz://voice/not-a-uuid`, `bukmarkz://voice/${id}/x`, `bukmarkz://voice/${id}?a=1`, `BUKMARKZ-X://voice/${id}`, 'javascript:alert(1)', `data:text/html,${id}`, '']) assert.equal(toBookmark(row({ url: bad })), null, bad);
+  assert.equal(itemKindOf(null), null);
+  assert.equal(applyChange([], { kind: 'upsert', row: row({ id: 'v', url: `bukmarkz://voice/${id}` }) }).length, 1);   // realtime insert of a voice note appears
 });

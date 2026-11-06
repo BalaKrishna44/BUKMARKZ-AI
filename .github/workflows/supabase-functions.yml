@@ -1,0 +1,24 @@
+name: Deploy Supabase Edge Functions
+# Manual only. Migrations are NOT run from CI on purpose: renumber the duplicate migrations and run them by hand first.
+on:
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  functions:
+    runs-on: ubuntu-latest
+    environment: production
+    steps:
+      - uses: actions/checkout@v4
+      - uses: supabase/setup-cli@v1
+        with:
+          version: latest
+      - name: Deploy functions
+        env:
+          SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
+          PROJECT_REF: ${{ secrets.SUPABASE_PROJECT_REF }}
+        run: |
+          set -euo pipefail
+          for f in check-link-health send-friday-digest weekly-digest; do
+            [ -d "supabase/functions/$f" ] && supabase functions deploy "$f" --no-verify-jwt --project-ref "$PROJECT_REF"
+          done

@@ -1,0 +1,6 @@
+@import "tailwindcss";
+
+:root { color-scheme: dark; }
+html { scroll-behavior: smooth; background: #020617; }               /* slate-950 */
+body { background: #020617; color: #f1f5f9; -webkit-font-smoothing: antialiased; }
+@media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } }

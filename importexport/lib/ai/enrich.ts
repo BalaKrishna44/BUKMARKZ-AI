@@ -61,14 +61,17 @@ export function sanitize(raw: any, allowedIds: Set<string>): EnrichOutput | null
   };
 }
 
-export async function classifyBatch(batch: EnrichInput[], signal?: AbortSignal): Promise<EnrichOutput[]> {
+export type UsageSink = (u: { model: string; inputTokens: number; outputTokens: number }) => void;
+
+export async function classifyBatch(batch: EnrichInput[], signal?: AbortSignal, onUsage?: UsageSink, model?: string): Promise<EnrichOutput[]> {
   const key = process.env.ANTHROPIC_API_KEY;
   if (!key) throw new AiError('ANTHROPIC_API_KEY not set', false);
   const payload = batch.map((b) => ({ id: b.id, url: b.url, domain: safeHost(b.url), title: b.title.slice(0, 300), note: (b.note ?? '').slice(0, 300), tags: (b.tags ?? []).slice(0, 10) }));
   const data = await post('https://api.anthropic.com/v1/messages',
     { 'x-api-key': key, 'anthropic-version': '2023-06-01' },
-    { model: MODEL(), max_tokens: 4096, system: SYSTEM, tools: [TOOL], tool_choice: { type: 'tool', name: TOOL.name },
+    { model: model ?? MODEL(), max_tokens: 4096, system: SYSTEM, tools: [TOOL], tool_choice: { type: 'tool', name: TOOL.name },
       messages: [{ role: 'user', content: `<bookmarks>\n${JSON.stringify(payload)}\n</bookmarks>` }] }, signal);
+  onUsage?.({ model: model ?? MODEL(), inputTokens: data.usage?.input_tokens ?? 0, outputTokens: data.usage?.output_tokens ?? 0 });
   const block = (data.content ?? []).find((c: any) => c.type === 'tool_use');
   const ids = new Set(batch.map((b) => b.id));
   const out = new Map<string, EnrichOutput>();
@@ -76,11 +79,12 @@ export async function classifyBatch(batch: EnrichInput[], signal?: AbortSignal):
   return [...out.values()]; // ids the model skipped are simply absent → caller re-queues them
 }
 
-export async function embedTexts(texts: string[], signal?: AbortSignal): Promise<(number[] | null)[]> {
+export async function embedTexts(texts: string[], signal?: AbortSignal, onUsage?: UsageSink): Promise<(number[] | null)[]> {
   const key = process.env.OPENAI_API_KEY; // Anthropic has no embeddings endpoint; swap this function for Gemini/Voyage if preferred
   if (!key) return texts.map(() => null);
   const data = await post('https://api.openai.com/v1/embeddings', { authorization: `Bearer ${key}` },
     { model: EMBED_MODEL(), input: texts.map((t) => t.slice(0, 8000)), dimensions: 1536 }, signal);
+  onUsage?.({ model: EMBED_MODEL(), inputTokens: data.usage?.total_tokens ?? data.usage?.prompt_tokens ?? 0, outputTokens: 0 });
   const rows: any[] = data.data ?? [];
   return texts.map((_, i) => { const e = rows.find((r) => r.index === i)?.embedding; return Array.isArray(e) && e.length === 1536 ? e : null; });
 }
@@ -94,7 +98,7 @@ function safeHost(u: string) { try { return new URL(u).hostname; } catch { retur
  * Process claimed rows: classify (chunks of 10, 3 in parallel) → embed → return rows ready for apply_ai_results.
  * Returns the ids that could not be processed so the caller can release them back to the queue.
  */
-export async function enrichItems(items: EnrichInput[], signal?: AbortSignal) {
+export async function enrichItems(items: EnrichInput[], signal?: AbortSignal, onUsage?: UsageSink, model?: string) {
   const ready: (EnrichOutput & { embedding: string | null })[] = [];
   const failed: string[] = [];
   const chunks: EnrichInput[][] = [];
@@ -105,9 +109,9 @@ export async function enrichItems(items: EnrichInput[], signal?: AbortSignal) {
     while (next < chunks.length) {
       const chunk = chunks[next++];
       try {
-        const res = await classifyBatch(chunk, signal);
+        const res = await classifyBatch(chunk, signal, onUsage, model);
         let vecs: (number[] | null)[] = res.map(() => null);
-        try { vecs = await embedTexts(res.map((r) => embeddingText(byId.get(r.id)!, r)), signal); } catch { /* embeddings are best-effort */ }
+        try { vecs = await embedTexts(res.map((r) => embeddingText(byId.get(r.id)!, r)), signal, onUsage); } catch { /* embeddings are best-effort */ }
         res.forEach((r, i) => ready.push({ ...r, embedding: vecs[i] ? `[${vecs[i]!.join(',')}]` : null }));
         const done = new Set(res.map((r) => r.id));
         chunk.forEach((c) => { if (!done.has(c.id)) failed.push(c.id); });

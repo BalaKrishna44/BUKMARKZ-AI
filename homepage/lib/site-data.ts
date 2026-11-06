@@ -2,12 +2,13 @@
  * Single source of truth for facts that appear BOTH on the page and in the JSON-LD.
  * Google requires structured data to match visible content, so the page and the schema both read from here.
  */
+import { PRICES } from './currency';
 export const SITE_URL = 'https://www.bukmarkz.com';
 export const SITE_NAME = 'Bukmarkz AI';
 
-export const PRICE = { proMonthly: 4.99, proAnnual: 39, teamMonthly: 12.99 } as const;
+export const PRICE = PRICES.USD; // canonical USD list prices (structured data and static copy). Visitors see local currency via lib/currency.ts
 export const TRIAL_MONTHS = 6;
-export const SAVE_PERCENT = Math.round((1 - PRICE.proAnnual / (PRICE.proMonthly * 12)) * 100); // 35
+export const SAVE_PERCENT = Math.round((1 - PRICE.proAnnual / (PRICE.proMonthly * 12)) * 100); // derived from PRICE
 export const usd = (n: number) => `$${n.toFixed(2)}`;
 
 export interface FaqItem {

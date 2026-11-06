@@ -1,3 +1,5 @@
+'use client';
+
 /**
  * BookmarkWorkspace: an "actionable bookmark & knowledge workspace" dashboard.
  *

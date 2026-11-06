@@ -26,7 +26,7 @@ const TOTAL_SOURCE_CHARS = 30000;   // many short sources must not balloon the p
  * Source text is untrusted web content: it goes in as JSON data inside <sources>, and the system prompt says
  * instructions inside it must be ignored. The model can only reply through the tool, and the output is validated.
  */
-export async function writeScript(docs: SourceDoc[], opts: { targetMinutes: number; style: 'conversation' | 'briefing' }): Promise<Script> {
+export async function writeScript(docs: SourceDoc[], opts: { targetMinutes: number; style: 'conversation' | 'briefing'; model?: string; onUsage?: (u: { model: string; inputTokens: number; outputTokens: number }) => void }): Promise<Script> {
   const words = Math.round(opts.targetMinutes * 150);
   const system = [
     'You write scripts for a short private podcast that reads out the listener\'s own saved articles and notes.',
@@ -39,7 +39,7 @@ export async function writeScript(docs: SourceDoc[], opts: { targetMinutes: numb
   ].join('\n');
   const perDoc = Math.max(1200, Math.min(PER_DOC_CHARS, Math.floor(TOTAL_SOURCE_CHARS / Math.max(1, docs.length))));
   const payload = JSON.stringify(docs.map((d) => ({ title: d.title, text: d.text.slice(0, perDoc) })));
-  const raw = await claudeTool({ system, content: `<sources>${payload}</sources>`, toolName: 'submit_script', schema: JSON_SCHEMA, maxTokens: 8192 });
+  const raw = await claudeTool({ system, content: `<sources>${payload}</sources>`, toolName: 'submit_script', schema: JSON_SCHEMA, maxTokens: 8192, model: opts.model, onUsage: opts.onUsage });
   const s = ScriptSchema.parse(raw);
   if (opts.style === 'briefing') s.turns = s.turns.map((t) => ({ ...t, speaker: 'A' as const }));
   return s;

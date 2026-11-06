@@ -9,10 +9,11 @@ export type ToWorker =
   | { type: 'recent:get' }
   | { type: 'tags:get' }
   | { type: 'recent:remove'; id: string }
-  | { type: 'queue:flush' };
+  | { type: 'queue:flush' }
+  | { type: 'flush:session'; windowId?: number };
 
 export type WorkerReply =
-  | { ok: true; session?: Pick<Session, 'user' | 'expiresAt'> | null; item?: SavedItem; items?: SavedItem[]; tags?: string[] }
+  | { ok: true; session?: Pick<Session, 'user' | 'expiresAt'> | null; item?: SavedItem; items?: SavedItem[]; tags?: string[]; flush?: { url: string; saved: number; closed: number; kept: number } }
   | { ok: false; error: string; code?: 'not_signed_in' | 'invalid_token' | 'bad_input' | 'network' | 'server' };
 
 /** Messages the service worker sends to a tab's overlay. */

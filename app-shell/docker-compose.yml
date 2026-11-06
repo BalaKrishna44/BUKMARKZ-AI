@@ -1,0 +1,39 @@
+# Coolify: New Resource -> Docker Compose (from this repo). Set the variables below in Coolify's Environment tab, NOT in this file.
+# Two services: the web app, and a tiny scheduler that calls the app's /api/cron/* routes (replaces vercel.json, which only works on Vercel).
+services:
+  app:
+    build:
+      context: .
+      args:
+        NEXT_PUBLIC_SITE_URL: ${NEXT_PUBLIC_SITE_URL}
+        NEXT_PUBLIC_SUPABASE_URL: ${NEXT_PUBLIC_SUPABASE_URL}
+        NEXT_PUBLIC_SUPABASE_ANON_KEY: ${NEXT_PUBLIC_SUPABASE_ANON_KEY}
+        NEXT_PUBLIC_VAPID_PUBLIC_KEY: ${NEXT_PUBLIC_VAPID_PUBLIC_KEY:-}
+    restart: unless-stopped
+    env_file: [.env]          # Coolify writes your Environment-tab values to .env at deploy time
+    expose: ["3000"]          # Coolify's proxy (Traefik/Caddy) publishes it with HTTPS; never publish this port on the host
+    mem_limit: 1g
+
+  cron:
+    image: alpine:3.20
+    restart: unless-stopped
+    depends_on: [app]
+    environment:
+      CRON_SECRET: ${CRON_SECRET}
+    mem_limit: 64m
+    # busybox crond does not pass environment to jobs, so the secret is written into a root-only script at start-up.
+    command: |
+      sh -c '
+      umask 077;
+      printf "#!/bin/sh\nexec wget -q -T 55 -O /dev/null --header \"Authorization: Bearer $$CRON_SECRET\" \"http://app:3000/api/cron/%b1\"\n" "\\044" > /usr/local/bin/hit && chmod 700 /usr/local/bin/hit;
+      cat > /etc/crontabs/root <<CRON
+      */5 * * * * /usr/local/bin/hit feeds
+      */5 * * * * /usr/local/bin/hit podcast
+      */5 * * * * /usr/local/bin/hit archive
+      */5 * * * * /usr/local/bin/hit enrich
+      30 0 * * * /usr/local/bin/hit daily-briefing
+      0 2 * * * /usr/local/bin/hit prices
+      0 3 * * * /usr/local/bin/hit resurface
+      0 4 * * 1 /usr/local/bin/hit digest
+      CRON
+      exec crond -f -l 8'

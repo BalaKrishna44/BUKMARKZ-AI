@@ -15,6 +15,8 @@ export async function claudeTool<T = unknown>(opts: {
   maxTokens?: number;
   model?: string;
   signal?: AbortSignal;
+  /** Called once per successful response so the caller can write the cost to the ledger (see lib/ai/circuitBreaker recordUsage). */
+  onUsage?: (u: { model: string; inputTokens: number; outputTokens: number }) => void;
 }): Promise<T> {
   const res = await fetch('https://api.anthropic.com/v1/messages', {
     method: 'POST',
@@ -30,7 +32,8 @@ export async function claudeTool<T = unknown>(opts: {
     }),
   });
   if (!res.ok) throw new Error(`anthropic ${res.status}: ${(await res.text()).slice(0, 300)}`);
-  const body = (await res.json()) as { content: { type: string; name?: string; input?: unknown }[]; stop_reason: string };
+  const body = (await res.json()) as { content: { type: string; name?: string; input?: unknown }[]; stop_reason: string; usage?: { input_tokens?: number; output_tokens?: number } };
+  opts.onUsage?.({ model: opts.model ?? ANTHROPIC_MODEL, inputTokens: body.usage?.input_tokens ?? 0, outputTokens: body.usage?.output_tokens ?? 0 });
   const block = body.content.find((b) => b.type === 'tool_use' && b.name === opts.toolName);
   if (!block) throw new Error('model returned no tool call');
   if (body.stop_reason === 'max_tokens') throw new Error('model output truncated');

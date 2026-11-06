@@ -34,3 +34,13 @@ Real Supabase auth, Realtime and RLS; `next build`; middleware and the login and
 - **Schema**: this follows the import/export schema (001/002: `item_type`, `category_id`, `tags`, `ai_tags`). The ai-engine schema also defines a different table called `oneclist_items` (checklist steps with `done_at`); both cannot be the same live table.
 - **Status values**: 001 only allows `status in ('bookmark','actionable_task')`. The enrichment worker writes 'pending' / 'processing' / 'processed' / 'failed', which that check rejects. Either relax it: `alter table oneclist_items drop constraint oneclist_items_status_chk;` or point the worker at `ai_status`.
 - Passkeys / OAuth buttons are not on the login page; add them to `LoginForm` if you use them.
+
+## Public Stacks (`/s/<slug>`)
+    sql/010_stacks.sql                       tables, RLS, get_public_stack() / create_stack() / fork_stack()
+    lib/stacks/{themes,slug,public}.ts       cover themes (contrast-tested), slug rules, cached anonymous read
+    app/s/[stackSlug]/page.tsx               public ISR page (fork CTA top + bottom, JSON-LD, share links)
+    app/s/[stackSlug]/opengraph-image.tsx    2400x1260 social card (next/og, edge)
+    app/s/[stackSlug]/fork/page.tsx          sign-in + confirm + server action (copies links into the visitor's account)
+    app/api/stacks/route.ts, [id]/route.ts   create/list, edit/unpublish/delete
+Needs `npm i zod`. Env: NEXT_PUBLIC_SITE_URL. Middleware matcher now skips /s/<slug> and its OG image (no auth round-trip on public traffic).
+A stack is a snapshot (title, URL, optional blurb). Bookmarks marked private, scans (`bukmarkz://`) and non-web URLs are never published. Anonymous users can only call `get_public_stack()`. Moderation: `update stacks set is_blocked = true where slug = '...'`.

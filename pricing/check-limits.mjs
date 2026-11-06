@@ -1,0 +1,23 @@
+// Fails when the pricing table drifts from the enforced limits. Run: node pricing/check-limits.mjs
+import { readFileSync } from 'node:fs';
+const here = new URL('.', import.meta.url);
+const limits = readFileSync(new URL('../plan-gating/lib/planLimits.ts', here), 'utf8');
+const table = readFileSync(new URL('PricingTable.tsx', here), 'utf8');
+const row = (plan) => { const m = limits.match(new RegExp(`${plan}:\\s*\\{([^}]*)\\}`)); if (!m) throw new Error('no PLAN_LIMITS row for ' + plan); return Object.fromEntries([...m[1].matchAll(/(\w+):\s*([\d_]+|null)/g)].map((x) => [x[1], x[2] === 'null' ? null : Number(x[2].replace(/_/g, ''))])); };
+const fmt = (n) => n.toLocaleString('en-US');
+const line = (label) => { const m = table.match(new RegExp(`\\{ label: '${label}[^']*'[^\\n]*`)); if (!m) throw new Error('missing table row: ' + label); return m[0]; };
+let bad = 0;
+const expect = (ok, msg) => { if (!ok) { bad++; console.error('MISMATCH: ' + msg); } else console.log('ok - ' + msg); };
+const f = row('free'), p = row('pro'), t = row('team');
+const ask = line('Ask Your Vault'), idx = line('AI-indexed links'), mcp = line('Vault MCP'), snap = line('Page snapshots');
+expect(ask.includes(`'${fmt(f.ask)} per month'`) && ask.includes(`'${fmt(p.ask)} per month'`) && ask.includes(`'${fmt(t.ask)} per user`), `Ask ${f.ask}/${p.ask}/${t.ask}`);
+expect(idx.includes(`'Up to ${fmt(f.index)}'`) && idx.includes(`'Up to ${fmt(p.index)}'`) && idx.includes(`'Up to ${fmt(t.index)}'`), `Indexed ${f.index}/${p.index}/${t.index}`);
+expect(mcp.includes(`'${fmt(f.mcp)} calls`) && mcp.includes(`'${fmt(p.mcp)} calls`) && mcp.includes(`'${fmt(t.mcp)} calls`), `MCP ${f.mcp}/${p.mcp}/${t.mcp}`);
+expect(f.snapshot === 0 && snap.includes('free: false') && snap.includes(`'${fmt(p.snapshot)} per month'`) && snap.includes(`'${fmt(t.snapshot)} per month'`), `Snapshots ${f.snapshot}/${p.snapshot}/${t.snapshot}`);
+const a = readFileSync(new URL('currency.ts', here), 'utf8'), b = readFileSync(new URL('../homepage/lib/currency.ts', here), 'utf8');
+expect(a === b, 'homepage/lib/currency.ts is identical to pricing/currency.ts (single price table)');
+const cb = readFileSync(new URL('../plan-gating/lib/ai/circuitBreaker.ts', here), 'utf8');
+const usd = a.match(/USD:\s*\{\s*proMonthly:\s*([\d.]+),[^}]*teamMonthly:\s*([\d.]+)/);
+const lp = cb.match(/LIST_PRICE_USD[^=]*=\s*\{\s*free:\s*0,\s*pro:\s*([\d.]+),\s*team:\s*([\d.]+)/);
+expect(!!usd && !!lp && Number(usd[1]) === Number(lp[1]) && Number(usd[2]) === Number(lp[2]), `AI breaker list prices (pro ${lp?.[1]}, team ${lp?.[2]}) match USD prices (pro ${usd?.[1]}, team ${usd?.[2]})`);
+process.exit(bad ? 1 : 0);
