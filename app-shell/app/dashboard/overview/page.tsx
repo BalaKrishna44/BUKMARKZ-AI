@@ -28,6 +28,24 @@ export default async function Overview() {
     <main className="mx-auto max-w-5xl px-4 py-8 sm:px-8">
       <h1 className="text-3xl font-extrabold tracking-tight text-[#10261c]">Overview</h1>
       <p className="mt-1 text-[#4b5c53]">Your vault at a glance.</p>
+      {total < 10 && (
+        <section className="mt-6 rounded-2xl border border-[#bfe3cc] bg-[#e6f6ec] p-5">
+          <h2 className="font-bold text-[#10261c]">Get started</h2>
+          <ol className="mt-3 space-y-2 text-sm">
+            {[
+              ['Install the browser extension', '/dashboard/extension', false],
+              ['Import your existing bookmarks', '/dashboard/import/resume', total > 0],
+              ['Ask your vault a question', '/dashboard', false],
+              ['Connect Claude or Cursor', '/dashboard/connect', false],
+            ].map(([label, href, done]) => (
+              <li key={label as string} className="flex items-center gap-2.5">
+                <span aria-hidden="true" className={`grid size-5 place-items-center rounded-full text-[11px] font-bold ${done ? 'bg-[#2fa66a] text-white' : 'border border-[#2fa66a] text-transparent'}`}>✓</span>
+                <Link href={href as string} className={`font-medium hover:underline ${done ? 'text-[#66766d] line-through' : 'text-[#10261c]'}`}>{label as string}</Link>
+              </li>
+            ))}
+          </ol>
+        </section>
+      )}
       <div className="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
         <Card title="Saved links"><p className="text-4xl font-extrabold text-[#10261c]">{n(all)}</p><p className="text-sm font-medium text-[#1a7f4e]">+{n(week)} this week</p></Card>
         <Card title="Open tasks"><p className="text-4xl font-extrabold text-[#10261c]">{n(tasks)}</p></Card>
