@@ -11,9 +11,9 @@ export const metadata: Metadata = {
 // FILL THESE IN BEFORE LAUNCH. GDPR Art. 13 requires the controller's identity and postal address; the DPDP Act requires the
 // Grievance Officer's contact details to be published. Nothing below is invented for you.
 // ---------------------------------------------------------------------------------------------------------------------
-const OPERATOR = '[Operator name: person or company that runs Bukmarkz]';
+const OPERATOR = 'Bala Krishna';
 const ADDRESS = '2716 HSR, 31st Main Road, 16th Cross, Bangalore 560102, India';
-const GRIEVANCE_OFFICER = '[Full name], Grievance Officer';
+const GRIEVANCE_OFFICER = 'Bala Krishna, Grievance Officer';
 const LAST_UPDATED = '4 November 2026';
 
 const SUPPORT = 'support@bukmarkz.com';
