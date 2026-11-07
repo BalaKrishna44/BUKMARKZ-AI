@@ -2,7 +2,7 @@
 .bkl *{box-sizing:border-box}.bkl a{color:inherit}
 .bkl .wrap{max-width:1040px;margin:0 auto}
 .bkl nav{display:flex;align-items:center;justify-content:space-between;gap:12px;padding-block:18px}
-.bkl .logo{display:flex;align-items:center;font-size:24px;color:var(--fg);text-decoration:none}
+.bkl .logo{display:flex;align-items:center;font-size:26px;color:#25914b;text-decoration:none}
 .bkl .links{display:flex;gap:26px;color:var(--mut);font-size:14px}.bkl .links a{text-decoration:none}.bkl .links a:hover{color:var(--fg)}
 @media(max-width:700px){.bkl .links{display:none}}
 .bkl .navr{display:flex;align-items:center;gap:14px}.bkl .signin{font-size:14px;font-weight:600;color:var(--mut);text-decoration:none}

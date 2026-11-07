@@ -31,7 +31,7 @@ export default function AppShell({ email, children }: { email: string; children:
         <button onClick={() => setOpen(true)} aria-label="Open menu" className="grid size-9 place-items-center rounded-lg border border-[#d8eedf] text-[#10261c]">
           <svg viewBox="0 0 24 24" className="size-5" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><path d="M4 7h16M4 12h16M4 17h16" /></svg>
         </button>
-        <span className="text-xl text-[#10261c]"><Wordmark /></span>
+        <span className="text-xl text-[#25914b]"><Wordmark /></span>
       </header>
       {open && <button aria-label="Close menu" onClick={() => setOpen(false)} className="fixed inset-0 z-40 bg-black/40 lg:hidden" />}
       <aside className={`fixed inset-y-0 left-0 z-50 flex w-64 flex-col overflow-y-auto bg-[#0d2418] px-3 py-5 text-[#cfe6d8] transition-transform lg:translate-x-0 ${open ? 'translate-x-0' : '-translate-x-full'}`}>
