@@ -7,6 +7,7 @@ export const NAV: NavGroup[] = [
     { label: 'Overview', href: '/dashboard/overview', icon: 'grid' },
     { label: 'Landing page', href: '/', icon: 'globe', external: true },
     { label: 'Dashboard & Ask', href: '/dashboard', icon: 'chat' },
+    { label: 'Notes', href: '/dashboard/notes', icon: 'doc' },
     { label: 'Stacks & Remix', href: '/m/stacks', icon: 'layers' },
   ] },
   { title: 'Onboarding', items: [
