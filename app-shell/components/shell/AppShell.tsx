@@ -5,6 +5,7 @@ import { usePathname } from 'next/navigation';
 import { useState, type ReactNode } from 'react';
 import { NAV, soonHref } from './nav';
 import Wordmark from '@/components/brand/Wordmark';
+import CommandPalette from './CommandPalette';
 
 const PATHS: Record<string, string> = {
   grid: 'M3 3h7v7H3zM14 3h7v7h-7zM3 14h7v7H3zM14 14h7v7h-7z', globe: 'M12 3a9 9 0 1 0 0 18 9 9 0 0 0 0-18zM3 12h18M12 3c3 3 3 15 0 18M12 3c-3 3-3 15 0 18',
@@ -24,6 +25,8 @@ export default function AppShell({ email, children }: { email: string; children:
   const active = (h: string) => (h === '/dashboard' ? path === '/dashboard' : path === h || path.startsWith(h + '/'));
   return (
     <div className="min-h-screen bg-[#f1f9f4] text-[#33443b] lg:pl-64">
+      <CommandPalette />
+      <button onClick={() => window.dispatchEvent(new Event('bukmarkz:palette'))} className="fixed bottom-4 right-4 z-30 hidden rounded-full border border-[#d8eedf] bg-white px-3.5 py-2 text-xs font-semibold text-[#4b5c53] shadow-md hover:bg-[#e6f6ec] sm:block" aria-label="Open quick search">Quick search · Ctrl K</button>
       <header className="sticky top-0 z-30 flex items-center gap-3 border-b border-[#d8eedf] bg-white/95 px-4 py-2.5 backdrop-blur lg:hidden">
         <button onClick={() => setOpen(true)} aria-label="Open menu" className="grid size-9 place-items-center rounded-lg border border-[#d8eedf] text-[#10261c]">
           <svg viewBox="0 0 24 24" className="size-5" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><path d="M4 7h16M4 12h16M4 17h16" /></svg>
