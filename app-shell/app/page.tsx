@@ -7,8 +7,8 @@ import { CURRENCY_COOKIE, detectCurrency } from '@/lib/currency';
 // Server component: it renders the JSON-LD into the first HTML response, then hands off to the interactive client page.
 export const metadata: Metadata = {
   metadataBase: new URL('https://www.bukmarkz.com'),
-  title: { default: 'Bukmarkz AI | Bookmarks, Notes & Reminders', template: '%s | Bukmarkz AI' },
-  description: 'Save links and notes in one click, then find them by meaning with AI search. Claim 6 months of Pro free, no credit card needed.',
+  title: { default: 'Bukmarkz | AI Bookmark Manager & Second Brain', template: '%s | Bukmarkz AI' },
+  description: 'Bukmarkz is an AI bookmark manager. Save links and notes in one click, auto-file them, and find anything by meaning. 6 months of Pro free, no credit card.',
   alternates: { canonical: '/' },
   openGraph: {
     title: 'Bukmarkz AI: Save it once. Find it by meaning.',
