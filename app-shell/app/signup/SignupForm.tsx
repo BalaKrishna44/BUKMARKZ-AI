@@ -3,6 +3,7 @@
 import Link from 'next/link';
 import { useState, type FormEvent } from 'react';
 import { createClient } from '@/lib/supabase/client';
+import Wordmark from '@/components/brand/Wordmark';
 
 export default function SignupForm() {
   const [supabase] = useState(() => createClient());
@@ -23,7 +24,7 @@ export default function SignupForm() {
   return (
     <main className="grid min-h-screen place-items-center bg-[#f1f9f4] px-4 py-10 text-[#33443b]">
       <form onSubmit={(e) => void submit(e)} className="w-full max-w-sm rounded-2xl border border-[#d8eedf] bg-white p-6 shadow-sm">
-        <p className="text-lg font-bold tracking-tight text-[#10261c]">Bukmarkz</p>
+        <p className="text-2xl text-[#10261c]"><Wordmark /></p>
         <h1 className="mt-4 text-xl font-bold tracking-tight text-[#10261c]">Create your account</h1>
         <p className="mt-1 text-sm text-[#4b5c53]">Save it once. Find it by meaning.</p>
         <label className="mt-5 block text-sm font-medium text-[#10261c]" htmlFor="email">Email</label>

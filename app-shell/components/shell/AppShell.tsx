@@ -4,6 +4,7 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useState, type ReactNode } from 'react';
 import { NAV, soonHref } from './nav';
+import Wordmark from '@/components/brand/Wordmark';
 
 const PATHS: Record<string, string> = {
   grid: 'M3 3h7v7H3zM14 3h7v7h-7zM3 14h7v7H3zM14 14h7v7h-7z', globe: 'M12 3a9 9 0 1 0 0 18 9 9 0 0 0 0-18zM3 12h18M12 3c3 3 3 15 0 18M12 3c-3 3-3 15 0 18',
@@ -27,11 +28,11 @@ export default function AppShell({ email, children }: { email: string; children:
         <button onClick={() => setOpen(true)} aria-label="Open menu" className="grid size-9 place-items-center rounded-lg border border-[#d8eedf] text-[#10261c]">
           <svg viewBox="0 0 24 24" className="size-5" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><path d="M4 7h16M4 12h16M4 17h16" /></svg>
         </button>
-        <span className="text-lg font-extrabold tracking-tight text-[#10261c]">Bukmarkz</span>
+        <span className="text-xl text-[#10261c]"><Wordmark /></span>
       </header>
       {open && <button aria-label="Close menu" onClick={() => setOpen(false)} className="fixed inset-0 z-40 bg-black/40 lg:hidden" />}
       <aside className={`fixed inset-y-0 left-0 z-50 flex w-64 flex-col overflow-y-auto bg-[#0d2418] px-3 py-5 text-[#cfe6d8] transition-transform lg:translate-x-0 ${open ? 'translate-x-0' : '-translate-x-full'}`}>
-        <Link href="/dashboard/overview" className="mb-5 px-2 text-[28px] font-extrabold tracking-tight text-[#5be39c]">Bukmarkz<span className="text-[#f4a52a]">.</span></Link>
+        <Link href="/dashboard/overview" className="mb-5 px-2 text-[28px] text-[#5be39c]"><Wordmark /></Link>
         <nav className="flex-1 space-y-5" aria-label="Main">
           {NAV.map((g) => (
             <div key={g.title}>

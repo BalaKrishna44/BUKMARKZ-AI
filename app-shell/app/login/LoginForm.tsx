@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, type FormEvent } from 'react';
+import Wordmark from '@/components/brand/Wordmark';
 import { createClient } from '@/lib/supabase/client';
 import { startExtensionSync } from '@/lib/syncLoginToExtension';
 import { useEffect } from 'react';
@@ -31,7 +32,7 @@ export default function LoginForm({ next, linkFailed }: { next: string; linkFail
   return (
     <main className="grid min-h-screen place-items-center bg-[#f1f9f4] px-4 py-10 text-[#33443b]">
       <div className="w-full max-w-sm">
-        <div className="mb-6 flex items-center gap-2.5"><span aria-hidden="true" className="grid size-9 place-items-center rounded-lg bg-[#2fa66a] text-[#04230f]"><svg viewBox="0 0 24 24" className="size-5" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round"><path d="m19 21-7-4-7 4V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2v16z" /></svg></span><span className="text-lg font-bold tracking-tight text-[#10261c]">Bukmarkz</span></div>
+        <div className="mb-6 flex items-center gap-2.5"><span aria-hidden="true" className="grid size-9 place-items-center rounded-lg bg-[#2fa66a] text-[#04230f]"><svg viewBox="0 0 24 24" className="size-5" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round"><path d="m19 21-7-4-7 4V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2v16z" /></svg></span><span className="text-2xl text-[#10261c]"><Wordmark /></span></div>
         <form onSubmit={(e) => void submit(e)} className="rounded-2xl border border-[#d8eedf] bg-white p-6 shadow-sm">
           <h1 className="text-xl font-bold tracking-tight text-[#10261c]">Welcome back</h1>
           <p className="mt-1 text-sm text-[#4b5c53]">Sign in to open your second brain.</p>
