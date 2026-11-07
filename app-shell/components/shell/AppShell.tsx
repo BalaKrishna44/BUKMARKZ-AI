@@ -35,7 +35,7 @@ export default function AppShell({ email, children }: { email: string; children:
       </header>
       {open && <button aria-label="Close menu" onClick={() => setOpen(false)} className="fixed inset-0 z-40 bg-black/40 lg:hidden" />}
       <aside className={`fixed inset-y-0 left-0 z-50 flex w-64 flex-col overflow-y-auto bg-[#0d2418] px-3 py-5 text-[#cfe6d8] transition-transform lg:translate-x-0 ${open ? 'translate-x-0' : '-translate-x-full'}`}>
-        <Link href="/dashboard/overview" className="mb-5 px-2 text-[28px] text-[#5be39c]"><Wordmark /></Link>
+        <Link href="/dashboard/overview" className="mb-5 px-2 text-[28px] text-[#5be39c]"><Wordmark uColor="#ffffff" /></Link>
         <nav className="flex-1 space-y-5" aria-label="Main">
           {NAV.map((g) => (
             <div key={g.title}>
