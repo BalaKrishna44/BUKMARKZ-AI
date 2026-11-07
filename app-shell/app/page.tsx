@@ -1,6 +1,6 @@
 import type { Metadata } from 'next';
 import HomeJsonLd from '@/components/JsonLd';
-import HomePage from '@/components/HomePage';
+import Landing from '@/components/landing/Landing';
 import { cookies, headers } from 'next/headers';
 import { CURRENCY_COOKIE, detectCurrency } from '@/lib/currency';
 
@@ -29,7 +29,7 @@ export default async function Page() {
   return (
     <>
       <HomeJsonLd />
-      <HomePage currency={currency} />
+      <Landing currency={currency} />
     </>
   );
 }
